@@ -39,6 +39,9 @@ dependencies = [
 pyspark = [
     "pyspark == 4.0.0",
 ]
+mcp = [
+    "mcp >= 1.7.0",
+]
 dev = [
     "furo",
     "mypy >=1.13, < 2",
@@ -64,6 +67,7 @@ Source = "https://github.com/NREL/sparkctl"
 
 [project.scripts]
 sparkctl = "sparkctl.cli.sparkctl:cli"
+sparkctl-mcp-server = "sparkctl.mcp_server.server:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

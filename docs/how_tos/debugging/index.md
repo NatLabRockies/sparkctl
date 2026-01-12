@@ -2,6 +2,18 @@
 # Debugging
 This page describes how to debug certain Spark errors when using sparkctl.
 
+```{eval-rst}
+.. toctree::
+    :maxdepth: 1
+
+    mcp_server
+```
+
+(ai-assisted-debugging)=
+## AI-Assisted Debugging
+sparkctl includes an MCP server that provides AI-assisted diagnosis of Spark failures.
+See {ref}`mcp-server` for details on using the MCP server with AI assistants like Claude.
+
 (spark-web-ui)=
 ## Spark web UI
 The web UI is a good first place to look for problems. Connect to ports 8080 and 4040 on the nodes
