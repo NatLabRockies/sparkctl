@@ -1,5 +1,5 @@
-# NREL Kestrel
-This package was originally developed using NREL's Kestrel HPC, which uses Slurm to manage resources.
+# NLR Kestrel
+This package was originally developed using NLR's Kestrel HPC, which uses Slurm to manage resources.
 
 This page contains information specific to Kestrel that users must consider.
 

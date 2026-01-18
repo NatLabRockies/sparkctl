@@ -37,7 +37,7 @@ Refer to the [user documentation](https://nrel.github.io/sparkctl/) for a descri
 and detailed usage instructions.
 
 ## Project Status
-The package is actively maintained and used at the National Renewable Energy Laboratory (NREL).
+The package is actively maintained and used at the National Laboratory of the Rockies  (NLR).
 The software is primarily geared toward HPCs that use Slurm. It also supports a generic list of
 servers as long as the servers have access to a shared filesystem and are accessible via SSH without
 password login.
@@ -52,4 +52,4 @@ Contributions are welcome.
 sparkctl is released under a BSD 3-Clause [license](https://github.com/NREL/sparkctl/blob/main/LICENSE).
 
 ## Software Record
-This package is developed under NREL Software Record SWR-25-109.
+This package is developed under NLR Software Record SWR-25-109.

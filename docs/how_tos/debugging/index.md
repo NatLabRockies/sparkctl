@@ -6,7 +6,7 @@ This page describes how to debug certain Spark errors when using sparkctl.
 ## Spark web UI
 The web UI is a good first place to look for problems. Connect to ports 8080 and 4040 on the nodes
 running Spark. You may need to create an ssh tunnel. This is an example that creates a tunnel
-between a user's Mac laptop and NREL's Kestrel HPC (adjust as necessary for Windows):
+between a user's Mac laptop and NLR's Kestrel HPC (adjust as necessary for Windows):
 
 ```console
 $ export COMPUTE_NODE=<your-compute-node-name>

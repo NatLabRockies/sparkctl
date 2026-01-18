@@ -62,7 +62,7 @@ incompatible with cluster version 4.0.0.
 
 Common causes:
 
-1. **High-bandwidth nodes**: Some NREL Kestrel compute nodes have two network cards, which Spark
+1. **High-bandwidth nodes**: Some NLR Kestrel compute nodes have two network cards, which Spark
    cannot deal with. Set `--constaint lbw` when allocating nodes.
 
 Check the Spark master logs in `./spark_scratch/logs/` for connection errors.

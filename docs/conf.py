@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "sparkctl"
-copyright = "2025, Alliance for Sustainable Energy"
+copyright = "2026, Alliance for Energy Innovation, LLC"
 author = "Daniel Thom"
 release = "0.1.0"
 

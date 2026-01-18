@@ -38,7 +38,7 @@ write speed. Drives that can deliver **2 GB/s** are ideal.
 ## Configuring Shuffle Storage Location
 
 Specify local storage for shuffle writes (for systems where sparkctl knows how to identify
-local storage such as NREL's Kestrel cluster):
+local storage such as NLR's Kestrel cluster):
 
 ```console
 $ sparkctl configure --local-storage
