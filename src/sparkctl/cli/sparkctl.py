@@ -1,7 +1,7 @@
 import sys
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import rich_click as click
 import toml
@@ -10,6 +10,7 @@ from loguru import logger
 from sparkctl.config import (
     DEFAULT_SETTINGS_FILENAME,
     RUNTIME,
+    get_binaries,
     sparkctl_settings,
 )
 from sparkctl.cluster_manager import ClusterManager
@@ -337,46 +338,46 @@ def configure(
     if python_path is None and use_current_python:
         logger.info("Use the current Python executable for Spark workers.")
         python_path = sys.executable
-    config = SparkConfig(
-        binaries=BinaryLocations(
-            spark_path=sparkctl_settings.binaries.spark_path,
-            java_path=sparkctl_settings.binaries.java_path,
-            hadoop_path=sparkctl_settings.binaries.get("hadoop_path"),
-            hive_tarball=sparkctl_settings.binaries.get("hive_tarball"),
-            postgresql_jar_file=sparkctl_settings.binaries.get("postgresql_jar_file"),
-        ),
-        runtime=SparkRuntimeParams(
-            executor_cores=executor_cores,
-            executor_memory_gb=executor_memory_gb,
-            driver_memory_gb=driver_memory_gb,
-            node_memory_overhead_gb=node_memory_overhead_gb,
-            enable_dynamic_allocation=dynamic_allocation,
-            shuffle_partition_multiplier=shuffle_partition_multiplier,
-            spark_defaults_template_file=spark_defaults_template_file,
-            use_local_storage=local_storage,
-            start_connect_server=connect_server,
-            start_history_server=history_server,
-            start_thrift_server=thrift_server,
-            spark_log_level=spark_log_level,
-            enable_hive_metastore=hive_metastore,
-            enable_postgres_hive_metastore=postgres_hive_metastore,
-            python_path=python_path,
-        ),
-        directories=RuntimeDirectories(
-            base=directory,
-            spark_scratch=spark_scratch,
-            metastore_dir=metastore_dir,
-        ),
-        compute=sparkctl_settings.get("compute", {"environment": "slurm"}),
-    )
-    config.resource_monitor.enabled = resource_monitor
-    res = handle_sparkctl_exception(ctx, _configure, config, start)
+
+    def build_config() -> SparkConfig:
+        # Build inside the handled scope so that a missing binaries configuration
+        # (raised by get_binaries) is reported cleanly rather than as a traceback.
+        config = SparkConfig(
+            binaries=get_binaries(),
+            runtime=SparkRuntimeParams(
+                executor_cores=executor_cores,
+                executor_memory_gb=executor_memory_gb,
+                driver_memory_gb=driver_memory_gb,
+                node_memory_overhead_gb=node_memory_overhead_gb,
+                enable_dynamic_allocation=dynamic_allocation,
+                shuffle_partition_multiplier=shuffle_partition_multiplier,
+                spark_defaults_template_file=spark_defaults_template_file,
+                use_local_storage=local_storage,
+                start_connect_server=connect_server,
+                start_history_server=history_server,
+                start_thrift_server=thrift_server,
+                spark_log_level=spark_log_level,
+                enable_hive_metastore=hive_metastore,
+                enable_postgres_hive_metastore=postgres_hive_metastore,
+                python_path=python_path,
+            ),
+            directories=RuntimeDirectories(
+                base=directory,
+                spark_scratch=spark_scratch,
+                metastore_dir=metastore_dir,
+            ),
+            compute=sparkctl_settings.get("compute", {"environment": "slurm"}),
+        )
+        config.resource_monitor.enabled = resource_monitor
+        return config
+
+    res = handle_sparkctl_exception(ctx, _configure, build_config, start)
     if res[1] != 0:
         ctx.exit(res[1])
 
 
-def _configure(config: SparkConfig, start: bool) -> ClusterManager:
-    mgr = ClusterManager(config)
+def _configure(build_config: Callable[[], SparkConfig], start: bool) -> ClusterManager:
+    mgr = ClusterManager(build_config())
     mgr.configure()
     if start:
         mgr.start()
