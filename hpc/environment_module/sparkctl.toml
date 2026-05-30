@@ -1,0 +1,32 @@
+# Shared sparkctl settings file for an HPC / environment-module deployment.
+#
+# Copy this file to the shared location referenced by the modulefile's
+# `sparkctl_settings` variable (e.g. /datasets/images/spark/sparkctl.toml) and
+# edit the paths below to match your downloaded binaries.
+#
+# The environment module exports SPARKCTL_SETTINGS_FILE pointing at this file,
+# so `sparkctl` reads these values automatically. A user can still override any
+# value with a `.sparkctl.toml` in their working directory.
+#
+# Only the [binaries] section is required. The [runtime] and [compute] sections
+# are optional site-wide defaults; users can override them with `sparkctl
+# configure` command-line options.
+
+[binaries]
+# Required.
+spark_path = "/datasets/images/spark/spark-4.1.2-bin-hadoop3"
+java_path = "/datasets/images/spark/jdk-21.0.7+6"
+# Optional. Remove or leave commented if not deployed.
+# hadoop_path = "/datasets/images/spark/hadoop-3.4.1"
+# hive_tarball = "/datasets/images/spark/apache-hive-4.0.1-bin.tar.gz"
+# postgresql_jar_file = "/datasets/images/spark/postgresql-42.7.4.jar"
+
+[compute]
+# "slurm" for Slurm allocations, or "native" for a generic list of servers.
+environment = "slurm"
+
+# Optional site-wide runtime defaults. Uncomment and adjust as desired.
+# [runtime]
+# executor_cores = 5
+# driver_memory_gb = 10
+# node_memory_overhead_gb = 10

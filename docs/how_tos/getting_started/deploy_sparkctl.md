@@ -47,3 +47,33 @@ $ sparkctl default-config \
     --postgresql-jar-file /datasets/images/apache_spark/postgresql-42.7.4.jar \
     --compute-environment slurm
 ```
+
+By default `sparkctl` reads this file from `~/.sparkctl.toml`. For a shared
+deployment, place it in a common location and point users at it with the
+`SPARKCTL_SETTINGS_FILE` environment variable:
+
+```console
+$ export SPARKCTL_SETTINGS_FILE=/datasets/images/apache_spark/sparkctl.toml
+```
+
+`sparkctl` loads settings files in increasing order of precedence:
+`~/.sparkctl.toml`, then the file named by `SPARKCTL_SETTINGS_FILE`, then a
+`.sparkctl.toml` in the current working directory. This lets a user override any
+site-wide default locally without touching the shared deployment.
+
+## Environment module (recommended)
+On HPC systems that use [Lmod](https://lmod.readthedocs.io/) or Environment
+Modules, you can wrap the steps above in an environment module so that users
+only need:
+
+```console
+$ module load sparkctl
+$ sparkctl configure --start
+```
+
+A ready-to-deploy modulefile (TCL and Lua flavors), an example shared settings
+file, and step-by-step instructions are provided in the
+[`hpc/environment_module`](https://github.com/NREL/sparkctl/tree/main/hpc/environment_module)
+directory of the repository. The module activates the shared virtual
+environment, sets `SPARKCTL_SETTINGS_FILE`, and puts `spark-submit`/`pyspark` on
+the user's `PATH`.

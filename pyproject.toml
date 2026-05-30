@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sparkctl"
-version = "0.4.0"
+version = "0.4.1"
 description = "Orchestrates Spark standalone clusters on HPCs."
 readme = "README.md"
 requires-python = ">=3.11, <3.14"

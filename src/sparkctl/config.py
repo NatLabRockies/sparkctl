@@ -1,3 +1,4 @@
+import os
 from sparkctl.models import AppParams, ComputeParams
 from pathlib import Path
 
@@ -8,6 +9,31 @@ from sparkctl.exceptions import InvalidConfiguration
 from sparkctl.models import BinaryLocations, SparkRuntimeParams, SparkConfig
 
 DEFAULT_SETTINGS_FILENAME = ".sparkctl.toml"
+SETTINGS_FILE_ENV_VAR = "SPARKCTL_SETTINGS_FILE"
+
+
+def _build_settings_files() -> list[Path]:
+    """Return the settings files to load, in increasing order of precedence.
+
+    Order: the home-directory file, then an explicit file named by the
+    ``SPARKCTL_SETTINGS_FILE`` environment variable (used by shared/HPC
+    deployments such as an environment module), then a project-local file in the
+    current working directory. Later files override earlier ones, so a user can
+    still drop a ``.sparkctl.toml`` in their working directory to override a
+    shared deployment.
+
+    All paths are absolute on purpose. A relative settings file would only be
+    found when running from $HOME because Dynaconf resolves relative paths
+    against its root_path (the first file's directory), not $HOME.
+    """
+    files = [Path.home() / DEFAULT_SETTINGS_FILENAME]
+    explicit = os.environ.get(SETTINGS_FILE_ENV_VAR)
+    if explicit:
+        files.append(Path(explicit).expanduser().absolute())
+    files.append(Path.cwd() / DEFAULT_SETTINGS_FILENAME)
+    return files
+
+
 RUNTIME = {
     "executor_cores": SparkRuntimeParams.model_fields["executor_cores"].default,
     "executor_memory_gb": SparkRuntimeParams.model_fields["executor_memory_gb"].default,
@@ -39,16 +65,7 @@ APP = {
 
 sparkctl_settings = Dynaconf(
     envvar_prefix="SPARKCTL",
-    settings_files=[
-        # default-config writes to the home directory by default, so load that file
-        # explicitly with an absolute path. A relative path would only be found when running
-        # from $HOME because Dynaconf resolves relative settings files against its root_path
-        # (the first file's directory), not $HOME.
-        Path.home() / DEFAULT_SETTINGS_FILENAME,
-        # Allow a project-local file in the current working directory to override the home
-        # settings. This must also be absolute for the same root_path reason as above.
-        Path.cwd() / DEFAULT_SETTINGS_FILENAME,
-    ],
+    settings_files=_build_settings_files(),
     validators=[
         # There is intentionally no default for BINARIES. Binary paths are environment-specific
         # and must come from the user's settings file (created by `sparkctl default-config`). A
