@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sparkctl"
-version = "0.3.2"
+version = "0.4.0"
 description = "Orchestrates Spark standalone clusters on HPCs."
 readme = "README.md"
 requires-python = ">=3.11, <3.14"
@@ -28,7 +28,7 @@ dependencies = [
     "loguru >= 0.7.2",
     "psutil",
     "pydantic >= 2.7, < 3",
-    "pyspark-client == 4.0.0",
+    "pyspark-client == 4.1.2",
     "rich_click",
     "rmon >= 0.4.0",
     "toml",
@@ -37,7 +37,7 @@ dependencies = [
 
 [project.optional-dependencies]
 pyspark = [
-    "pyspark == 4.0.0",
+    "pyspark == 4.1.2",
 ]
 dev = [
     "furo",
