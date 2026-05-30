@@ -55,8 +55,8 @@ $ export PYSPARK_PYTHON=$(which python)
 ### I'm getting an error about mismatched Spark versions.
 
 If you are running pyspark/spark-submit after installing via `pip install sparkctl[pyspark]`,
-your version of pyspark must match the cluster version exactly. Client version 4.0.1 is
-incompatible with cluster version 4.0.0.
+your version of pyspark must match the cluster version exactly. Client version 4.1.3 is
+incompatible with cluster version 4.1.2.
 
 ### Why can't my workers connect to the master?
 

@@ -15,9 +15,9 @@ from sparkctl.config import DEFAULT_SETTINGS_FILENAME
 from sparkctl.models import ComputeEnvironment
 
 
-SPARK_DIR_NAME = "spark-4.0.0-bin-hadoop3"
+SPARK_DIR_NAME = "spark-4.1.2-bin-hadoop3"
 SPARK_GZ_NAME = f"{SPARK_DIR_NAME}.tgz"
-SPARK_URL = f"https://dlcdn.apache.org/spark/spark-4.0.0/{SPARK_GZ_NAME}"
+SPARK_URL = f"https://dlcdn.apache.org/spark/spark-4.1.2/{SPARK_GZ_NAME}"
 SPARK_DIR_GZ = Path("tests") / "data" / SPARK_GZ_NAME
 SPARK_DIR = Path("tests") / "data" / SPARK_DIR_NAME
 

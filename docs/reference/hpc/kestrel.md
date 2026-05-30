@@ -11,12 +11,12 @@ Spark is installed on Kestrel. Use these locations when your configure your envi
 ├── hadoop-3.4.1/
 ├── jdk-21.0.7/
 ├── postgresql-42.7.4.jar
-├── spark-4.0.0-bin-hadoop3/
+├── spark-4.1.2-bin-hadoop3/
 ```
 
 ```console
 $ sparkctl default-config \
-    /datasets/images/apache_spark/spark-4.0.0-bin-hadoop3 \
+    /datasets/images/apache_spark/spark-4.1.2-bin-hadoop3 \
     /datasets/images/apache_spark/jdk-21.0.7 \
     --hadoop-path /datasets/images/apache_spark/hadoop-3.4.1 \
     --hive-tarball /datasets/images/apache_spark/apache-hive-4.0.1-bin.tar.gz \

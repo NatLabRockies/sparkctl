@@ -13,10 +13,10 @@ This tutorial covers three approaches:
 ## Prerequisites
 
 Install Ibis with the PySpark backend in your Python environment. You must pin `pyspark` to
-version 4.0.0 to match sparkctl's requirements:
+version 4.1.2 to match sparkctl's requirements:
 
 ```console
-$ pip install 'ibis-framework[pyspark]' 'pyspark==4.0.0'
+$ pip install 'ibis-framework[pyspark]' 'pyspark==4.1.2'
 ```
 
 This installs Ibis with PySpark support at the version compatible with sparkctl.
