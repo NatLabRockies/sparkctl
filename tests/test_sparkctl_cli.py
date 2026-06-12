@@ -3,6 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 import toml
 from click.testing import CliRunner
 
@@ -10,6 +11,7 @@ import sparkctl
 from sparkctl.cli.sparkctl import cli
 
 
+@pytest.mark.integration
 def test_default_config(tmp_path, spark_binaries):
     spark_path = spark_binaries[0]["dir_path"]
     hadoop_path = spark_binaries[1]["dir_path"]
@@ -46,6 +48,7 @@ def test_default_config(tmp_path, spark_binaries):
     assert data["binaries"]["postgresql_jar_file"] == str(postgres_jar.absolute())
 
 
+@pytest.mark.integration
 def test_configure_start_stop(setup_local_env):
     config, tmp_path = setup_local_env
     cmd = [

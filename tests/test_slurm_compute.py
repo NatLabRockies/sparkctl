@@ -1,16 +1,20 @@
 import os
+from pathlib import Path
 
 import pytest
 
-from sparkctl import make_default_spark_config
-from sparkctl.models import ComputeEnvironment
+from sparkctl.models import BinaryLocations, ComputeEnvironment, ComputeParams, SparkConfig
 from sparkctl.slurm_compute import SlurmCompute
 
 
 @pytest.fixture
 def slurm_compute() -> SlurmCompute:
-    config = make_default_spark_config()
-    config.compute.environment = ComputeEnvironment.SLURM
+    # Construct the config directly rather than through make_default_spark_config() so that the
+    # test does not depend on a user settings file (~/.sparkctl.toml), which is absent in CI.
+    config = SparkConfig(
+        binaries=BinaryLocations(spark_path=Path("spark"), java_path=Path("java")),
+        compute=ComputeParams(environment=ComputeEnvironment.SLURM),
+    )
     return SlurmCompute(config)
 
 

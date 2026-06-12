@@ -197,6 +197,8 @@ class ComputeEnvironment(StrEnum):
     NATIVE = "native"
     # sparkctl detects workers through Slurm environment variables.
     SLURM = "slurm"
+    # Deterministic values for a single-node cluster, used for testing.
+    FAKE = "fake"
 
 
 class PostgresScripts(SparkctlBaseModel):

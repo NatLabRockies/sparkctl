@@ -434,7 +434,9 @@ spark.worker.cleanup.enabled = true
         # Leave one CPU for OS and management software.
         worker_num_cpus -= 1
 
-        min_executors_per_node = worker_num_cpus // self._config.runtime.executor_cores
+        # Use at least one executor per node even when the node has fewer CPUs than
+        # executor_cores (e.g. a small CI runner or laptop), which would otherwise divide by zero.
+        min_executors_per_node = max(1, worker_num_cpus // self._config.runtime.executor_cores)
         if self._config.runtime.executor_memory_gb is None:
             executor_memory_gb = worker_memory_gb // min_executors_per_node
         else:
@@ -446,7 +448,7 @@ spark.worker.cleanup.enabled = true
             )
             raise InvalidConfiguration(msg)
         executors_by_mem = worker_memory_gb // executor_memory_gb
-        executors_by_cpu = worker_num_cpus // self._config.runtime.executor_cores
+        executors_by_cpu = min_executors_per_node
         if executors_by_cpu <= executors_by_mem:
             executors_per_node = executors_by_cpu
         else:

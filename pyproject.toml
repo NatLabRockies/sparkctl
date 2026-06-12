@@ -87,6 +87,9 @@ minversion = "6.0"
 addopts = "-ra"
 testpaths = ["tests"]
 norecursedirs = ["tests/data"]
+markers = [
+    "integration: tests that download real Spark/Java binaries or start a real Spark cluster; excluded from CI, run locally with -m integration",
+]
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.

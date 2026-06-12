@@ -3,6 +3,7 @@ import time
 from pathlib import Path
 
 import psutil
+import pytest
 
 from sparkctl import (
     ClusterManager,
@@ -21,6 +22,7 @@ def test_cluster_manager_workers(setup_local_env: tuple[SparkConfig, Path]):
     assert mgr.get_workers() == new_workers
 
 
+@pytest.mark.integration
 def test_managed_start(setup_local_env: tuple[SparkConfig, Path]):
     config, output_dir = setup_local_env
     config.directories.base = output_dir
