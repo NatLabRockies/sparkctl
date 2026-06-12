@@ -129,6 +129,10 @@ class SparkProcessRunner:
             "srun",
             "--job-name=sparkctl-worker",
             "--export=ALL",
+            # Do not connect the worker task's stdin to this process's stdin. Otherwise this
+            # long-lived background srun competes with the interactive shell for the terminal
+            # and steals keystrokes.
+            "--input=none",
             *self._srun_node_args(workers),
             f"--output={log_dir}/spark-worker-%N.out",
         ]
@@ -138,7 +142,11 @@ class SparkProcessRunner:
         logger.info("Start Spark workers: {}", " ".join(cmd))
         with open(self._get_srun_log_file(), "w", encoding="utf-8") as f_out:
             proc = subprocess.Popen(
-                cmd, stdout=f_out, stderr=subprocess.STDOUT, start_new_session=True
+                cmd,
+                stdin=subprocess.DEVNULL,
+                stdout=f_out,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,
             )
         # The job step must stay alive for the lifetime of the workers, so srun runs in
         # the background and tmp_script is not deleted here. configure() recreates the
@@ -209,12 +217,14 @@ class SparkProcessRunner:
             "--job-name=sparkctl-stop-rmon",
             "--export=ALL",
             "--overlap",
+            # Do not read from the terminal; see _start_worker_processes_srun.
+            "--input=none",
             *self._srun_node_args(workers),
         ]
         cmd.append(str(tmp_script))
         logger.info("Stop rmon on workers: {}", " ".join(cmd))
         try:
-            proc = subprocess.run(cmd, env=self._get_env())
+            proc = subprocess.run(cmd, stdin=subprocess.DEVNULL, env=self._get_env())
         finally:
             tmp_script.unlink()
         if proc.returncode != 0:

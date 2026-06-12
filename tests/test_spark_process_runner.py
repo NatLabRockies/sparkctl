@@ -38,6 +38,7 @@ class FakePopen:
         self.cmd = cmd
         self.pid = 12345
         self._returncode = returncode
+        self.kwargs = kwargs
 
     def poll(self):
         return self._returncode
@@ -69,6 +70,9 @@ def test_start_worker_processes_srun(tmp_path, monkeypatch, no_sleep):
     assert "--nodelist=node1,node2" in cmd
     assert "--cpus-per-task=104" in cmd
     assert not any(x.startswith("--het-group") for x in cmd)
+    # The background srun must not read the terminal, or it steals the interactive shell's input.
+    assert "--input=none" in cmd
+    assert captured["proc"].kwargs["stdin"] == subprocess.DEVNULL
 
     content = Path(cmd[-1]).read_text(encoding="utf-8")
     assert "export SPARK_NO_DAEMONIZE=true" in content
@@ -198,6 +202,7 @@ def test_stop_worker_processes_srun_stops_rmon(tmp_path, monkeypatch, no_sleep):
     def fake_run(cmd, **kwargs):
         # Record the rmon-stop command and the generated script before it is unlinked.
         captured["cmd"] = cmd
+        captured["kwargs"] = kwargs
         captured["script"] = Path(cmd[-1]).read_text(encoding="utf-8")
         kill_order.append("stop_rmon_srun")
         return SimpleNamespace(returncode=0)
@@ -223,6 +228,8 @@ def test_stop_worker_processes_srun_stops_rmon(tmp_path, monkeypatch, no_sleep):
     assert cmd[0] == "srun"
     assert "--overlap" in cmd
     assert "--nodelist=node1,node2" in cmd
+    assert "--input=none" in cmd
+    assert captured["kwargs"]["stdin"] == subprocess.DEVNULL
     assert "kill -TERM" in captured["script"]
     assert "rmon_$(hostname).pid" in captured["script"]
     # rmon must be stopped before the worker job step is torn down.
