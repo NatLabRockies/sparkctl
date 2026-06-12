@@ -16,7 +16,7 @@ from sparkctl.models import ComputeEnvironment
 
 SPARK_DIR_NAME = "spark-4.1.2-bin-hadoop3"
 SPARK_GZ_NAME = f"{SPARK_DIR_NAME}.tgz"
-SPARK_URL = f"https://dlcdn.apache.org/spark/spark-4.1.2/{SPARK_GZ_NAME}"
+SPARK_URL = f"https://archive.apache.org/dist/spark/spark-4.1.2/{SPARK_GZ_NAME}"
 SPARK_DIR_GZ = Path("tests") / "data" / SPARK_GZ_NAME
 SPARK_DIR = Path("tests") / "data" / SPARK_DIR_NAME
 
@@ -28,7 +28,7 @@ HADOOP_DIR = Path("tests") / "data" / HADOOP_DIR_NAME
 
 HIVE_DIR_NAME = "apache-hive-4.0.1-bin"
 HIVE_GZ_NAME = f"{HIVE_DIR_NAME}.tar.gz"
-HIVE_URL = f"https://downloads.apache.org/hive/hive-4.0.1/{HIVE_GZ_NAME}"
+HIVE_URL = f"https://archive.apache.org/dist/hive/hive-4.0.1/{HIVE_GZ_NAME}"
 HIVE_DIR_GZ = Path("tests") / "data" / HIVE_GZ_NAME
 HIVE_DIR = Path("tests") / "data" / HIVE_DIR_NAME
 
@@ -63,14 +63,14 @@ TARBALLS: list[dict[str, Any]] = [
 
 if sys.platform == "linux":
     JAVA_DIR_NAME = "jdk-21.0.7"
-    JAVA_GZ_NAME = "jdk-21_linux-x64_bin.tar.gz"
-    JAVA_URL = f"https://download.oracle.com/java/21/latest/{JAVA_GZ_NAME}"
+    JAVA_GZ_NAME = "jdk-21.0.7_linux-x64_bin.tar.gz"
+    JAVA_URL = f"https://download.oracle.com/java/21/archive/{JAVA_GZ_NAME}"
     JAVA_DIR_GZ = Path("tests") / "data" / JAVA_GZ_NAME
     JAVA_DIR = Path("tests") / "data" / JAVA_DIR_NAME
 elif sys.platform == "darwin":
     JAVA_DIR_NAME = "jdk-21.0.7.jdk"
-    JAVA_GZ_NAME = "jdk-21_macos-aarch64_bin.tar.gz"
-    JAVA_URL = f"https://download.oracle.com/java/21/latest/{JAVA_GZ_NAME}"
+    JAVA_GZ_NAME = "jdk-21.0.7_macos-aarch64_bin.tar.gz"
+    JAVA_URL = f"https://download.oracle.com/java/21/archive/{JAVA_GZ_NAME}"
     JAVA_DIR_GZ = Path("tests") / "data" / JAVA_GZ_NAME
     JAVA_DIR = Path("tests") / "data" / JAVA_DIR_NAME
 else:

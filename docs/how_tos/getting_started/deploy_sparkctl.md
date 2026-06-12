@@ -27,14 +27,20 @@ Here is an example filesystem layout:
 ```
 
 ## URLs
-Download locations will vary over time. Here is a set of URLs with software tested with Apache
-Spark v4.1.2:
+Download locations will vary over time. Here is a set of permanent links to the specific software
+versions tested with Apache Spark v4.1.2:
 
-- https://dlcdn.apache.org/spark/spark-4.1.2/spark-4.1.2-bin-hadoop3.tgz
-- https://download.oracle.com/java/21/latest/jdk-21_linux-x64_bin.tar.gz
+- https://archive.apache.org/dist/spark/spark-4.1.2/spark-4.1.2-bin-hadoop3.tgz
+- https://download.oracle.com/java/21/archive/jdk-21.0.7_linux-x64_bin.tar.gz
 - https://archive.apache.org/dist/hadoop/common/hadoop-3.4.1/hadoop-3.4.1.tar.gz
-- https://downloads.apache.org/hive/hive-4.0.1/apache-hive-4.0.1-bin.tar.gz
+- https://archive.apache.org/dist/hive/hive-4.0.1/apache-hive-4.0.1-bin.tar.gz
 - https://jdbc.postgresql.org/download/postgresql-42.7.4.jar
+
+To use a different version, substitute the version number in the path. For the Apache projects, use
+`archive.apache.org/dist/...`, which permanently hosts every release. The mirror hosts
+(`downloads.apache.org` and `dlcdn.apache.org`) and Oracle's `java/21/latest/` path only serve the
+current release, so a version-specific URL on those hosts returns a 404 once a newer version is
+published.
 
 ## sparkctl configuration file
 This command will create a default sparkctl configuration file given this filesystem layout:
