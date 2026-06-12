@@ -73,7 +73,7 @@ $ sparkctl configure --start
 
 A ready-to-deploy modulefile (TCL and Lua flavors), an example shared settings
 file, and step-by-step instructions are provided in the
-[`hpc/environment_module`](https://github.com/NREL/sparkctl/tree/main/hpc/environment_module)
+[`hpc/environment_module`](https://github.com/NatLabRockies/sparkctl/tree/main/hpc/environment_module)
 directory of the repository. The module activates the shared virtual
 environment, sets `SPARKCTL_SETTINGS_FILE`, and puts `spark-submit`/`pyspark` on
 the user's `PATH`.

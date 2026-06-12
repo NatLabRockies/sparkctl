@@ -49,7 +49,7 @@ support.
 Contributions are welcome.
 
 ## License
-sparkctl is released under a BSD 3-Clause [license](https://github.com/NREL/sparkctl/blob/main/LICENSE).
+sparkctl is released under a BSD 3-Clause [license](https://github.com/NatLabRockies/sparkctl/blob/main/LICENSE).
 
 ## Software Record
 This package is developed under NLR Software Record SWR-25-109.

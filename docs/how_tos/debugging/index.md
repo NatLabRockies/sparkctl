@@ -173,7 +173,7 @@ $ htop
 ```
 
 ### Automated resource monitoring
-sparkctl integrates with [rmon](https://github.com/NREL/resource_monitor) to collect resource
+sparkctl integrates with [rmon](https://github.com/NatLabRockies/resource_monitor) to collect resource
 utilization stats from all compute nodes in your cluster. You can enable this monitoring when
 you configure the cluster:
 
