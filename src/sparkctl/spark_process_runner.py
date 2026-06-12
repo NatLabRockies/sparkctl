@@ -1,14 +1,17 @@
 import os
 import shlex
 import shutil
+import signal
 import stat
 import subprocess
+import time
 from pathlib import Path
 from typing import Any
 
 from loguru import logger
 
-from sparkctl.models import SparkConfig
+from sparkctl.exceptions import ExecutionError
+from sparkctl.models import ComputeEnvironment, SparkConfig
 
 
 class SparkProcessRunner:
@@ -63,11 +66,16 @@ class SparkProcessRunner:
         finally:
             tmp_script.unlink()
 
-    def start_worker_processes(self, workers: list[str], memory_gb: int) -> None:
+    def start_worker_processes(
+        self, workers: list[str], memory_gb: int, num_cpus_per_worker: int | None = None
+    ) -> None:
         """Start the Spark worker processes."""
+        if self._use_srun():
+            self._start_worker_processes_srun(workers, memory_gb, num_cpus_per_worker)
+            return
+
         # Calling Spark's start-workers.sh doesn't work because there is no way to forward
         # SPARK_CONF_DIR and JAVA_HOME through ssh in their scripts.
-        # In a Slurm environment, we could srun or mpiexec. This works everywhere.
         start_script = self._sbin_cmd("start-worker.sh")
         tmp_script = self._make_start_worker_script(start_script, memory_gb)
         try:
@@ -84,6 +92,9 @@ class SparkProcessRunner:
 
     def stop_worker_processes(self, workers: list[str]) -> int:
         """Stop the Spark workers."""
+        if self._use_srun():
+            return self._stop_worker_processes_srun(workers)
+
         tmp_script = self._make_stop_worker_script(self._config.resource_monitor.enabled)
         ret = 0
         for worker in workers:
@@ -94,6 +105,145 @@ class SparkProcessRunner:
                 ret = proc.returncode
         tmp_script.unlink()
         return ret
+
+    def _use_srun(self) -> bool:
+        if self._config.compute.environment != ComputeEnvironment.SLURM:
+            return False
+        if not self._config.compute.use_srun:
+            logger.info("Launch Spark workers with ssh because compute.use_srun is disabled.")
+            return False
+        return True
+
+    def _start_worker_processes_srun(
+        self, workers: list[str], memory_gb: int, num_cpus_per_worker: int | None
+    ) -> None:
+        # Unlike ssh, srun forwards the full submission environment to the worker nodes
+        # (environment modules, virtual environments, LD_LIBRARY_PATH).
+        tmp_script = self._make_start_worker_script(
+            self._start_worker_cmd(), memory_gb, daemonize=False
+        )
+        log_dir = self._config.directories.spark_scratch.absolute() / "logs"
+        log_dir.mkdir(parents=True, exist_ok=True)
+        num_workers = len(workers)
+        cmd = [
+            "srun",
+            "--job-name=sparkctl-worker",
+            "--export=ALL",
+            *self._srun_node_args(workers),
+            f"--output={log_dir}/spark-worker-%N.out",
+        ]
+        if num_cpus_per_worker is not None:
+            cmd.append(f"--cpus-per-task={num_cpus_per_worker}")
+        cmd.append(str(tmp_script))
+        logger.info("Start Spark workers: {}", " ".join(cmd))
+        with open(self._get_srun_log_file(), "w", encoding="utf-8") as f_out:
+            proc = subprocess.Popen(
+                cmd, stdout=f_out, stderr=subprocess.STDOUT, start_new_session=True
+            )
+        # The job step must stay alive for the lifetime of the workers, so srun runs in
+        # the background and tmp_script is not deleted here. configure() recreates the
+        # conf directory on the next run.
+        time.sleep(1)
+        ret = proc.poll()
+        if ret is not None:
+            msg = (
+                f"The srun command that starts Spark workers exited immediately with "
+                f"return code {ret}. See {self._get_srun_log_file()}."
+            )
+            raise ExecutionError(msg)
+        self._get_srun_pid_file().write_text(f"{proc.pid}\n", encoding="utf-8")
+        logger.info(
+            "Started Spark workers on {} node(s) through srun with pid {}",
+            num_workers,
+            proc.pid,
+        )
+
+    def _srun_node_args(self, workers: list[str]) -> list[str]:
+        num_workers = len(workers)
+        args = [
+            f"--nodes={num_workers}",
+            f"--ntasks={num_workers}",
+            "--ntasks-per-node=1",
+        ]
+        if "SLURM_HET_SIZE" in os.environ:
+            # The master node is heterogeneous group 0; the workers are group 1.
+            args.append("--het-group=1")
+        else:
+            args.append(f"--nodelist={','.join(workers)}")
+        return args
+
+    def _stop_worker_processes_srun(self, workers: list[str]) -> int:
+        # rmon runs inside the worker srun job step, so it must be stopped gracefully before
+        # the step is torn down, otherwise it is killed before it can write its stats and plots.
+        ret = 0
+        if self._config.resource_monitor.enabled:
+            ret = self._stop_rmon_srun(workers)
+
+        pid_file = self._get_srun_pid_file()
+        if not pid_file.exists():
+            logger.error("Cannot stop Spark workers: {} does not exist", pid_file)
+            return ret or 1
+        pid = int(pid_file.read_text(encoding="utf-8").strip())
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except ProcessLookupError:
+            logger.info("The srun process running Spark workers has already exited")
+            pid_file.unlink()
+            return ret
+        if self._wait_for_process_exit(pid, timeout_s=30):
+            logger.info("Stopped the srun process running Spark workers")
+            pid_file.unlink()
+            return ret
+        logger.error(
+            "The srun process {} running Spark workers did not exit within the timeout", pid
+        )
+        return ret or 1
+
+    def _stop_rmon_srun(self, workers: list[str]) -> int:
+        tmp_script = self._make_stop_rmon_script()
+        # --overlap is required because the worker srun job step is still holding the
+        # allocation's resources; without it this step would block until the workers exit,
+        # which is the opposite of what we need.
+        cmd = [
+            "srun",
+            "--job-name=sparkctl-stop-rmon",
+            "--export=ALL",
+            "--overlap",
+            *self._srun_node_args(workers),
+        ]
+        cmd.append(str(tmp_script))
+        logger.info("Stop rmon on workers: {}", " ".join(cmd))
+        try:
+            proc = subprocess.run(cmd, env=self._get_env())
+        finally:
+            tmp_script.unlink()
+        if proc.returncode != 0:
+            logger.error("Failed to stop rmon on workers: {}", proc.returncode)
+        return proc.returncode
+
+    @staticmethod
+    def _wait_for_process_exit(pid: int, timeout_s: int) -> bool:
+        for _ in range(timeout_s):
+            try:
+                # Reap the process if it is a child of this process, as happens with
+                # ClusterManager.managed_cluster. Otherwise, it would remain a zombie
+                # and appear to be running in the check below.
+                wpid, _ = os.waitpid(pid, os.WNOHANG)
+                if wpid == pid:
+                    return True
+            except ChildProcessError:
+                try:
+                    os.kill(pid, 0)
+                except ProcessLookupError:
+                    return True
+            time.sleep(1)
+        return False
+
+    def _get_srun_pid_file(self) -> Path:
+        return self._config.directories.base / "srun_workers.pid"
+
+    def _get_srun_log_file(self) -> Path:
+        return self._config.directories.base / "srun_workers.log"
 
     def _start_workers(self, script: str, memory_gb: int | None) -> None:
         cmd = f"{script} {self._url}"
@@ -156,15 +306,25 @@ class SparkProcessRunner:
         self,
         start_script: str,
         memory_gb: int,
+        daemonize: bool = True,
     ) -> Path:
         conf_dir = self._config.directories.get_spark_conf_dir()
         content = f"""#!/bin/bash
 export SPARK_CONF_DIR={conf_dir}
 export JAVA_HOME={self._java_path}
-{start_script} {self._url} -m {memory_gb}g
 """
-        if self._config.resource_monitor.enabled:
-            content += self._get_rmon_commands()
+        worker_cmd = f"{start_script} {self._url} -m {memory_gb}g"
+        if daemonize:
+            content += f"{worker_cmd}\n"
+            if self._config.resource_monitor.enabled:
+                content += self._get_rmon_commands()
+        else:
+            # Slurm kills daemonized processes when the srun job step completes, so keep
+            # the worker in the foreground for the lifetime of the step.
+            content += "export SPARK_NO_DAEMONIZE=true\n"
+            if self._config.resource_monitor.enabled:
+                content += self._get_rmon_commands()
+            content += f"exec {worker_cmd}\n"
         tmp_script = self._conf_dir / "tmp_start_worker.sh"
         tmp_script.write_text(content, encoding="utf-8")
         os.chmod(tmp_script, os.stat(tmp_script).st_mode | stat.S_IXUSR)
@@ -193,17 +353,35 @@ export JAVA_HOME={self._java_path}
 {self._stop_worker_cmd()}
 """
         if kill_rmon:
-            content += f"""
-rmon_pid_file={self._config.directories.base}/rmon_$(hostname).pid
-if [ -f $rmon_pid_file ]; then
-    pid=$(cat $rmon_pid_file)
-    if kill -0 "$pid" 2>/dev/null; then
-        kill -TERM $pid
-    fi
-    rm $rmon_pid_file
-fi
-"""
+            content += self._get_rmon_stop_snippet()
         tmp_script = self._conf_dir / "tmp_stop_worker.sh"
         tmp_script.write_text(content, encoding="utf-8")
         os.chmod(tmp_script, os.stat(tmp_script).st_mode | stat.S_IXUSR)
         return tmp_script
+
+    def _make_stop_rmon_script(self) -> Path:
+        content = f"""#!/bin/bash
+{self._get_rmon_stop_snippet()}"""
+        tmp_script = self._conf_dir / "tmp_stop_rmon.sh"
+        tmp_script.write_text(content, encoding="utf-8")
+        os.chmod(tmp_script, os.stat(tmp_script).st_mode | stat.S_IXUSR)
+        return tmp_script
+
+    def _get_rmon_stop_snippet(self) -> str:
+        # Send SIGTERM to the rmon process recorded on this node, then wait for it to exit so
+        # that it can flush its stats and write its plots. This matters most on the srun path,
+        # where the worker job step (and thus rmon) is torn down immediately afterward.
+        return f"""
+rmon_pid_file={self._config.directories.base}/rmon_$(hostname).pid
+if [ -f "$rmon_pid_file" ]; then
+    pid=$(cat "$rmon_pid_file")
+    if kill -0 "$pid" 2>/dev/null; then
+        kill -TERM "$pid"
+        for _ in $(seq 1 30); do
+            kill -0 "$pid" 2>/dev/null || break
+            sleep 1
+        done
+    fi
+    rm -f "$rmon_pid_file"
+fi
+"""

@@ -8,3 +8,7 @@ class InvalidConfiguration(SparkctlBaseException):
 
 class OperationNotAllowed(SparkctlBaseException):
     """Raised when a user performs an invalid operation."""
+
+
+class ExecutionError(SparkctlBaseException):
+    """Raised when an external command fails."""

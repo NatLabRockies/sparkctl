@@ -302,7 +302,9 @@ class ClusterManager:
             runner.start_worker_process(worker_memory_gb)
             tracker.started_workers = True
         else:
-            runner.start_worker_processes(workers, worker_memory_gb)
+            runner.start_worker_processes(
+                workers, worker_memory_gb, num_cpus_per_worker=self._intf.get_worker_num_cpus()
+            )
             tracker.started_workers = True
         logger.info("Spark worker memory = {} GB", worker_memory_gb)
 
