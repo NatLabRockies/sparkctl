@@ -15,5 +15,5 @@ def make_compute_interface(config: SparkConfig) -> ComputeInterface:
         case ComputeEnvironment.FAKE:
             return FakeCompute(config)
         case _:
-            msg = f"{config.environment=} is not supported"
+            msg = f"{config.compute.environment=} is not supported"
             raise NotImplementedError(msg)

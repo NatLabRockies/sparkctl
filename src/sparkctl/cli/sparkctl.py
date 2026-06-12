@@ -79,7 +79,8 @@ $ sparkctl default-config ~/apache-spark/spark-4.1.2-bin-hadoop3 ~/jdk-21.0.8 -e
 @click.option(
     "-e",
     "--compute-environment",
-    type=click.Choice([x.value for x in ComputeEnvironment]),
+    # FAKE is intended for tests only, so it is not offered as a user-facing choice.
+    type=click.Choice([x.value for x in ComputeEnvironment if x != ComputeEnvironment.FAKE]),
     default=ComputeEnvironment.SLURM.value,
     help="Compute environment",
     callback=lambda *x: ComputeEnvironment(x[2]),
