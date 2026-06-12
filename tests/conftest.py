@@ -26,9 +26,9 @@ HADOOP_URL = f"https://archive.apache.org/dist/hadoop/common/{HADOOP_DIR_NAME}/{
 HADOOP_DIR_GZ = Path("tests") / "data" / HADOOP_GZ_NAME
 HADOOP_DIR = Path("tests") / "data" / HADOOP_DIR_NAME
 
-HIVE_DIR_NAME = "apache-hive-4.0.1-bin"
+HIVE_DIR_NAME = "apache-hive-4.2.0-bin"
 HIVE_GZ_NAME = f"{HIVE_DIR_NAME}.tar.gz"
-HIVE_URL = f"https://archive.apache.org/dist/hive/hive-4.0.1/{HIVE_GZ_NAME}"
+HIVE_URL = f"https://archive.apache.org/dist/hive/hive-4.2.0/{HIVE_GZ_NAME}"
 HIVE_DIR_GZ = Path("tests") / "data" / HIVE_GZ_NAME
 HIVE_DIR = Path("tests") / "data" / HIVE_DIR_NAME
 
