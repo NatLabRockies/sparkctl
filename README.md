@@ -48,6 +48,26 @@ support.
 
 Contributions are welcome.
 
+## Development
+Install the package with its development dependencies:
+```console
+$ pip install -e ".[dev]"
+```
+
+Run the unit tests. These are fast, require no special resources, and are what CI runs:
+```console
+$ pytest -m "not integration"
+```
+
+The integration tests download a real Spark and Java distribution into `tests/data/` and start a
+real single-node Spark cluster, so they are slower and require network access and sufficient
+memory. They are excluded from CI; run them locally with:
+```console
+$ pytest -m integration
+```
+
+Run the complete suite (unit and integration tests) with `pytest`.
+
 ## License
 sparkctl is released under a BSD 3-Clause [license](https://github.com/NatLabRockies/sparkctl/blob/main/LICENSE).
 
