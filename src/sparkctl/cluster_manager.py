@@ -28,6 +28,7 @@ class ClusterManager:
 
     CONFIG_FILENAME = "config.json"
     STATUS_FILENAME = "status.json"
+    DEFAULT_EXECUTOR_CORES = 5
 
     def __init__(self, config: SparkConfig, status: StatusTracker | None = None) -> None:
         self._config = config
@@ -512,14 +513,40 @@ spark.worker.cleanup.enabled = true
 
         logger.info("Enabled dynamic allocation")
 
+    def _get_num_gpus(self) -> int:
+        """Return the number of GPUs per worker node, from the override or auto-detection."""
+        num_gpus = self._config.runtime.gpus_per_node
+        if num_gpus is None:
+            num_gpus = self._intf.get_worker_num_gpus()
+        return num_gpus
+
+    def _resolve_executor_cores(self) -> int:
+        """Return the cores per executor, resolving the auto (None) default.
+
+        When GPUs are enabled and the user has not set executor_cores explicitly, target one
+        executor per GPU by dividing the node's usable cores evenly among the GPUs (the
+        NVIDIA-recommended layout). Otherwise fall back to the standard default.
+        """
+        rt = self._config.runtime
+        if rt.executor_cores is not None:
+            return rt.executor_cores
+        if rt.enable_gpus or rt.enable_rapids:
+            num_gpus = self._get_num_gpus()
+            if num_gpus > 0:
+                # Reserve one CPU for the OS, matching _config_executors.
+                usable_cpus = self._intf.get_worker_num_cpus() - 1
+                return max(1, usable_cpus // num_gpus)
+        return self.DEFAULT_EXECUTOR_CORES
+
     def _config_executors(self, defaults_file: Path) -> None:
+        rt = self._config.runtime
         num_workers = self._intf.get_num_workers()
-        worker_memory_gb = self._get_worker_memory_gb(self._config.runtime.driver_memory_gb)
+        worker_memory_gb = self._get_worker_memory_gb(rt.driver_memory_gb)
         worker_num_cpus = self._intf.get_worker_num_cpus()
         # Leave one CPU for OS and management software.
         worker_num_cpus -= 1
 
-        executor_cores = self._config.runtime.executor_cores
+        executor_cores = self._resolve_executor_cores()
         if worker_num_cpus < executor_cores:
             msg = (
                 f"Each worker node has {self._intf.get_worker_num_cpus()} CPU(s) "
@@ -532,11 +559,11 @@ spark.worker.cleanup.enabled = true
             raise InvalidConfiguration(msg)
 
         # The guard above ensures worker_num_cpus >= executor_cores, so this is always >= 1.
-        min_executors_per_node = worker_num_cpus // executor_cores
-        if self._config.runtime.executor_memory_gb is None:
-            executor_memory_gb = worker_memory_gb // min_executors_per_node
+        executors_by_cpu = worker_num_cpus // executor_cores
+        if rt.executor_memory_gb is None:
+            executor_memory_gb = worker_memory_gb // executors_by_cpu
         else:
-            executor_memory_gb = self._config.runtime.executor_memory_gb
+            executor_memory_gb = rt.executor_memory_gb
         if executor_memory_gb > worker_memory_gb:
             msg = (
                 f"{executor_memory_gb=} cannot be more than {worker_memory_gb=}. "
@@ -544,19 +571,38 @@ spark.worker.cleanup.enabled = true
             )
             raise InvalidConfiguration(msg)
         executors_by_mem = worker_memory_gb // executor_memory_gb
-        executors_by_cpu = min_executors_per_node
-        if executors_by_cpu <= executors_by_mem:
-            executors_per_node = executors_by_cpu
-        else:
-            executors_per_node = executors_by_mem
+        executors_per_node = min(executors_by_cpu, executors_by_mem)
 
-        total_num_cpus = executors_per_node * self._config.runtime.executor_cores * num_workers
+        # With GPU scheduling each executor claims executor_gpu_amount GPU(s), so a node can run at
+        # most one executor per that many GPUs. Cap the count so executors are not left
+        # unschedulable for lack of a GPU, and warn when CPUs/memory leave GPUs idle. The auto
+        # value of executor_cores already targets one executor per GPU.
+        if rt.enable_gpus or rt.enable_rapids:
+            num_gpus = self._get_num_gpus()
+            if num_gpus > 0:
+                max_executors_by_gpu = max(1, num_gpus // rt.executor_gpu_amount)
+                if executors_per_node > max_executors_by_gpu:
+                    executors_per_node = max_executors_by_gpu
+                elif executors_per_node < max_executors_by_gpu:
+                    idle_gpus = (
+                        max_executors_by_gpu - executors_per_node
+                    ) * rt.executor_gpu_amount
+                    logger.warning(
+                        "Only {} executor(s) fit per node (limited by CPUs/memory) but {} GPU(s) "
+                        "are available, so {} GPU(s) will sit idle. Lower executor_cores or "
+                        "allocate more CPUs/memory so one executor runs per GPU.",
+                        executors_per_node,
+                        num_gpus,
+                        idle_gpus,
+                    )
+
+        total_num_cpus = executors_per_node * executor_cores * num_workers
         total_num_executors = executors_per_node * num_workers
-        partitions = total_num_cpus * self._config.runtime.shuffle_partition_multiplier
+        partitions = total_num_cpus * rt.shuffle_partition_multiplier
         with open(defaults_file, "a") as f_out:
             f_out.write(
                 f"""
-spark.executor.cores {self._config.runtime.executor_cores}
+spark.executor.cores {executor_cores}
 spark.sql.shuffle.partitions {partitions}
 spark.executor.memory {executor_memory_gb}g
 """
@@ -681,9 +727,7 @@ applications.sink.prometheusServlet.path=/metrics/applications/prometheus
 
     def _enable_gpus(self, defaults_file: Path) -> None:
         rt_params = self._config.runtime
-        num_gpus = rt_params.gpus_per_node
-        if num_gpus is None:
-            num_gpus = self._intf.get_worker_num_gpus()
+        num_gpus = self._get_num_gpus()
         if num_gpus <= 0:
             msg = (
                 "GPU scheduling was enabled but no GPUs were detected on the worker nodes. "
@@ -703,7 +747,7 @@ applications.sink.prometheusServlet.path=/metrics/applications/prometheus
             task_gpu_amount = rt_params.task_gpu_amount
         else:
             # Let the cores in an executor share that executor's GPU(s) by default.
-            task_gpu_amount = executor_gpu_amount / rt_params.executor_cores
+            task_gpu_amount = executor_gpu_amount / self._resolve_executor_cores()
         with open(defaults_file, "a") as f_out:
             f_out.write(
                 f"""

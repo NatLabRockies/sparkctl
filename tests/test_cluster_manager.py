@@ -122,6 +122,40 @@ def test_configure_gpus_with_override(setup_local_env: tuple[SparkConfig, Path])
     assert discovery_script.stat().st_mode & 0o100  # owner-executable
 
 
+def test_configure_gpus_auto_sizes_one_executor_per_gpu(
+    setup_local_env: tuple[SparkConfig, Path],
+):
+    config, tmp_path = setup_local_env
+    config.directories.spark_scratch = tmp_path / "spark_scratch"
+    config.runtime.enable_gpus = True
+    config.runtime.gpus_per_node = 4
+    # executor_cores is left at its auto (None) default. FakeCompute reports 12 CPUs (11 usable),
+    # so one executor per GPU -> 11 // 4 = 2 cores each, and task gpu amount = 1 / 2 = 0.5.
+    assert config.runtime.executor_cores is None
+    mgr = ClusterManager.from_config(config)
+    mgr.configure()
+    defaults = config.directories.get_spark_defaults_file().read_text(encoding="utf-8")
+    assert "spark.executor.cores 2" in defaults
+    assert "spark.executor.resource.gpu.amount 1" in defaults
+    assert "spark.task.resource.gpu.amount 0.5" in defaults
+
+
+def test_configure_explicit_executor_cores_overrides_gpu_sizing(
+    setup_local_env: tuple[SparkConfig, Path],
+):
+    config, tmp_path = setup_local_env
+    config.directories.spark_scratch = tmp_path / "spark_scratch"
+    config.runtime.enable_gpus = True
+    config.runtime.gpus_per_node = 4
+    # An explicit value wins over the auto one-executor-per-GPU sizing. 11 usable CPUs // 3 = 3
+    # executors, fewer than the 4 GPUs, so one GPU is left idle (logged as a warning).
+    config.runtime.executor_cores = 3
+    mgr = ClusterManager.from_config(config)
+    mgr.configure()
+    defaults = config.directories.get_spark_defaults_file().read_text(encoding="utf-8")
+    assert "spark.executor.cores 3" in defaults
+
+
 def test_configure_executor_cores_exceed_worker_cpus_fails(
     setup_local_env: tuple[SparkConfig, Path],
 ):

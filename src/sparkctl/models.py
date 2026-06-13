@@ -63,9 +63,11 @@ class BinaryLocations(SparkctlBaseModel):
 class SparkRuntimeParams(SparkctlBaseModel):
     """Controls Spark runtime parameters."""
 
-    executor_cores: int = Field(
-        default=5,
-        description="Number of cores per executor",
+    executor_cores: int | None = Field(
+        default=None,
+        description="Number of cores per executor. By default this is auto-determined: when GPUs "
+        "are enabled, sparkctl runs one executor per GPU and divides the node's cores evenly "
+        "among them (the NVIDIA-recommended layout); otherwise it defaults to 5.",
     )
     executor_memory_gb: int | None = Field(
         default=None,

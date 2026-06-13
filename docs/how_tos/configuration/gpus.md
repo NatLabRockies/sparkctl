@@ -24,8 +24,20 @@ This generates a GPU discovery script in the cluster's `conf` directory and writ
 - `spark.task.resource.gpu.amount`
 
 By default each executor is assigned one GPU and tasks share that GPU
-(`spark.task.resource.gpu.amount = executor_gpu_amount / executor_cores`). Tune these through your
-settings file:
+(`spark.task.resource.gpu.amount = executor_gpu_amount / executor_cores`).
+
+### Executor sizing
+
+When GPUs are enabled and you do not set `executor_cores`, sparkctl follows NVIDIA's recommended
+layout: **one executor per GPU**, with the node's usable cores divided evenly among them. For
+example, on a node with 4 GPUs and 64 cores you get 4 executors with ~15 cores each, so every GPU is
+used and each has a healthy pool of CPU cores to feed it (I/O, decompression, shuffle). To use all
+*N* GPUs you therefore need at least *N* cores in the allocation; request cores generously (e.g.
+Slurm `--cpus-per-task` or `--exclusive`). If CPUs or memory only allow fewer executors than there
+are GPUs, sparkctl logs a warning that some GPUs will sit idle.
+
+Setting `executor_cores` explicitly overrides this and is honored as-is. Tune the GPU assignment
+through your settings file:
 
 ```toml
 [runtime]
@@ -33,6 +45,7 @@ enable_gpus = true
 gpus_per_node = 4
 executor_gpu_amount = 1
 task_gpu_amount = 0.25
+# executor_cores = 16   # optional; omit to auto-size one executor per GPU
 ```
 
 ## RAPIDS Accelerator

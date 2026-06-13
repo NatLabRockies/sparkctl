@@ -65,12 +65,11 @@ then the driver registered with the master but no executor could be launched. Op
 UI on port 8080 (see [above](#spark-web-ui)) and check the workers. Common causes:
 
 - **The node has fewer CPUs than `executor_cores`.** An executor must fit on a single worker, so if
-  the worker advertises fewer free cores than `executor_cores` (5 by default), no executor can be
-  scheduled and the job hangs forever. This frequently happens when a GPU allocation grants GPUs but
-  only one CPU. Check `echo $SLURM_CPUS_ON_NODE`; request more CPUs (e.g. the Slurm
-  `--cpus-per-task` option) or lower `executor_cores`, then reconfigure and restart. As of recent
-  versions sparkctl fails fast at `configure` time when `executor_cores` exceeds the available CPUs
-  rather than letting the job hang.
+  the worker advertises fewer free cores than `executor_cores`, no executor can be scheduled and the
+  job hangs forever. This frequently happens when a GPU allocation grants GPUs but only one CPU.
+  Check `echo $SLURM_CPUS_ON_NODE`; request more CPUs (e.g. the Slurm `--cpus-per-task` option) or
+  lower `executor_cores`, then reconfigure and restart. As of recent versions sparkctl fails fast at
+  `configure` time when `executor_cores` exceeds the available CPUs rather than letting the job hang.
 - **Executor memory exceeds what the worker offers** — lower `--executor-memory-gb` (or
   `executor_cores`).
 - **GPU scheduling was enabled but the worker advertises no GPUs.** If you ran `sparkctl configure

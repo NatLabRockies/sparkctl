@@ -191,6 +191,7 @@ $ sparkctl configure --local-storage --thrift-server\n
     "-e",
     "--executor-cores",
     default=sparkctl_settings.runtime.get("executor_cores"),
+    type=int,
     show_default=True,
     help=SparkRuntimeParams.model_fields["executor_cores"].description,
 )
@@ -448,7 +449,7 @@ def configure(
     start: bool,
     directory: Path,
     spark_scratch: Path,
-    executor_cores: int,
+    executor_cores: int | None,
     executor_memory_gb: int,
     driver_memory_gb: int,
     node_memory_overhead_gb: int,
