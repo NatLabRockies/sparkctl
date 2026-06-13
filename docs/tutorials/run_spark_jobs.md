@@ -26,7 +26,7 @@ the CLI help, e.g. `spark-submit --help`, for details on how to set these option
 
    ```console
    $ module load python
-   $ source ~/python-envs/sparkctl
+   $ source ~/python-envs/sparkctl/bin/activate
    ```
 
 4. Configure the Spark cluster. The sparkctl code will detect the compute nodes based on

@@ -18,7 +18,7 @@ environment variables for you.
 
    ```console
    $ module load python
-   $ source ~/python-envs/sparkctl
+   $ source ~/python-envs/sparkctl/bin/activate
    ```
 
 3. Configure and start the Spark cluster.

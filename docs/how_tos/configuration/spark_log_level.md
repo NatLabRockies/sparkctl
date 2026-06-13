@@ -14,17 +14,20 @@ This sets the root logger to `WARN`, so you'll only see warnings and errors.
 
 ## Available Log Levels
 
-Spark uses Log4j 2 with these levels (from most to least verbose):
+The `--spark-log-level` option accepts these values:
 
 | Level | Description | Use Case |
 |-------|-------------|----------|
-| `trace` | Fine-grained debugging | Deep Spark internals debugging |
 | `debug` | Detailed debugging | Troubleshooting specific issues |
 | `info` | General information (default) | Development, understanding job progress |
 | `warn` | Warnings only | Production jobs, cleaner output |
 | `error` | Errors only | When you only care about failures |
-| `fatal` | Critical failures only | Minimal output |
-| `off` | No logging | Not recommended |
+
+```{eval-rst}
+.. note:: Log4j 2 also defines ``trace``, ``fatal``, and ``off`` levels, but ``--spark-log-level``
+   does not accept them. To use one of those, edit ``log4j2.properties`` in ``./conf/`` after
+   running ``sparkctl configure``, as described in the Per-Logger Configuration section below.
+```
 
 ## Recommendations
 
@@ -36,7 +39,7 @@ Spark uses Log4j 2 with these levels (from most to least verbose):
 
 With `INFO` (default), you'll see messages like:
 ```
-INFO SparkContext: Running Spark version 3.5.1
+INFO SparkContext: Running Spark version 4.1.2
 INFO ResourceUtils: Resources for spark.driver: ...
 INFO SparkContext: Submitted application: My Job
 INFO Executor: Starting executor ID driver on host ...

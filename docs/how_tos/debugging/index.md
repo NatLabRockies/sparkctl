@@ -18,7 +18,7 @@ Open your browser to http://localhost:4040 after configuring the tunnel to acces
 ## Log files
 sparkctl configures Spark to record log files in the base directory. Spark master, worker, connect
 server, etc, will be in `./spark_scratch/logs`. Executor logs will be in
-`./spark_scratch/worker/app-*/*/stderr`
+`./spark_scratch/workers/app-*/*/stderr`
 
 For example,
 ```console
@@ -44,12 +44,12 @@ queries are often visible in the executor `stderr` files. For example, if a job 
 you can tail the `stderr` files to see what is happening:
 
 ```console
-$ tail -f spark_scratch/worker/*/*/stderr
+$ tail -f spark_scratch/workers/*/*/stderr
 ```
 
 If you have many executors, you may want to tail only the most recent ones. Identify them with
 ```console
-$ find spark_scratch -type f -name stderr -exec stat -f '%m %Sm %N' {} + 2>/dev/null | sort -n
+$ find spark_scratch -type f -name stderr -exec stat -c '%Y %y %n' {} + 2>/dev/null | sort -n
 ```
 
 ## Spark shuffle partitions
