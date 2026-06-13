@@ -1,4 +1,5 @@
 import os
+import re
 import shlex
 import shutil
 import signal
@@ -7,6 +8,7 @@ import subprocess
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+from socket import gethostname
 from typing import Any
 
 from loguru import logger
@@ -90,6 +92,10 @@ class SparkProcessRunner:
             f"--port={port}",
             f"--ip={self._config.runtime.jupyter_ip}",
             f"--notebook-dir={self._config.directories.base}",
+            # Stop jupyter_lsp from probing for language servers that are not installed, which
+            # otherwise floods the log with tracebacks. Passed as config (dotted form) so it is
+            # ignored harmlessly when jupyter_lsp is not present.
+            "--LanguageServerManager.autodetect=False",
         ]
         logger.info("Start Jupyter server: {}", " ".join(cmd))
         with open(log_file, "w", encoding="utf-8") as f_out:
@@ -101,17 +107,54 @@ class SparkProcessRunner:
                 start_new_session=True,
                 env=env,
             )
-        time.sleep(1)
-        ret = proc.poll()
-        if ret is not None:
-            msg = f"The Jupyter server exited immediately with return code {ret}. See {log_file}."
-            raise ExecutionError(msg)
+        url = self._wait_for_jupyter_url(proc, log_file)
         pid_file.write_text(f"{proc.pid}\n", encoding="utf-8")
+        self._log_jupyter_access(url, port, log_file)
+
+    def _wait_for_jupyter_url(self, proc: "subprocess.Popen[bytes]", log_file: Path) -> str | None:
+        """Wait for the server to report its access URL, returning it (or None on timeout).
+
+        Also fails fast if the process exits before it is ready.
+        """
+        url_regex = re.compile(r"https?://\S+/(?:tree|lab)\?token=\w+")
+        for _ in range(40):  # up to ~20 seconds
+            ret = proc.poll()
+            if ret is not None:
+                msg = f"The Jupyter server exited with return code {ret}. See {log_file}."
+                raise ExecutionError(msg)
+            if log_file.exists():
+                match = url_regex.search(log_file.read_text(encoding="utf-8"))
+                if match:
+                    return match.group(0)
+            time.sleep(0.5)
+        return None
+
+    def _log_jupyter_access(self, url: str | None, port: int, log_file: Path) -> None:
+        if url is None:
+            logger.warning(
+                "Started the Jupyter server, but did not detect its access URL within the timeout. "
+                "Find the URL (with token) in {}.",
+                log_file,
+            )
+            return
+
+        host = gethostname()
+        token_match = re.search(r"token=(\w+)", url)
+        token = f"?token={token_match.group(1)}" if token_match else ""
+        path = "lab" if self._config.runtime.jupyter_command == "lab" else "tree"
         logger.info(
-            "Started Jupyter server with pid {} on port {}. The access URL (with token) is in {}.",
-            proc.pid,
+            "Jupyter is running on {} (port {}). From your laptop, open an SSH tunnel:\n"
+            "    ssh -L {}:{}:{} <your-hpc-login-host>\n"
+            "then browse to:\n"
+            "    http://localhost:{}/{}{}",
+            host,
             port,
-            log_file,
+            port,
+            host,
+            port,
+            port,
+            path,
+            token,
         )
 
     def stop_jupyter_server(self) -> int:

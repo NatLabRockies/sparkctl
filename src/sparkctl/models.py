@@ -112,10 +112,11 @@ class SparkRuntimeParams(SparkctlBaseModel):
         "Defaults to the classic 'notebook'; use 'lab' for JupyterLab.",
     )
     jupyter_ip: str = Field(
-        default="127.0.0.1",
-        description="IP address the Jupyter server binds to. Defaults to localhost, which is "
-        "secure and works with an SSH tunnel to the master node. Set to 0.0.0.0 to listen on all "
-        "interfaces (only if you understand the exposure).",
+        default="0.0.0.0",
+        description="IP address the Jupyter server binds to. Defaults to all interfaces so it can "
+        "be reached by tunneling to the compute node's hostname through a login node (the common "
+        "HPC pattern); access is protected by Jupyter's token. Set to 127.0.0.1 to bind to "
+        "localhost only, which requires tunneling directly into the compute node.",
     )
     jupyter_port: int = Field(
         default=8889,

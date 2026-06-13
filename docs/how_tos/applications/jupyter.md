@@ -36,33 +36,39 @@ spark = SparkSession.builder.getOrCreate()
 spark.createDataFrame([(1, 2), (3, 4)], ["a", "b"]).show()
 ```
 
-## Find the access URL
+## Connect to the server
 
-The Jupyter access URL, including its login token, is written to `jupyter.log` in the cluster base
-directory:
+When the server starts, sparkctl logs the node it is running on, a ready-to-use SSH tunnel
+command, and the access URL (with token). It looks like:
 
-```console
-$ grep -m1 'http' jupyter.log
+```
+Jupyter is running on x1000c0s0b0n0 (port 8889). From your laptop, open an SSH tunnel:
+    ssh -L 8889:x1000c0s0b0n0:8889 <your-hpc-login-host>
+then browse to:
+    http://localhost:8889/tree?token=<token>
 ```
 
-Jupyter listens on `127.0.0.1:8889` by default. Binding to localhost keeps the server off the
-cluster network; reach it with an SSH tunnel. From your laptop, forward the port to the master node
-(use `-J <hpc-login-host>` to hop through the login node, and replace `master-node` with the node
-running the server):
+Run the `ssh` command from your laptop (replacing `<your-hpc-login-host>` with your cluster's login
+host), then open the `http://localhost:8889/...` URL in your browser. The same information is always
+available in `jupyter.log` in the cluster base directory. Change the port with `--jupyter-port`.
 
-```console
-$ ssh -J <hpc-login-host> -L 8889:localhost:8889 master-node
-```
-
-Then open the URL from `jupyter.log`, replacing the host with `localhost`. Change the port with
-`--jupyter-port`.
+Jupyter listens on all interfaces (`0.0.0.0`) by default so it is reachable by tunneling to the
+compute node's hostname through a login node, which is the portable HPC pattern. Access is protected
+by Jupyter's token.
 
 ```{eval-rst}
-.. note:: If you cannot reach the master node directly, ``--jupyter-ip 0.0.0.0`` makes Jupyter
-   listen on all interfaces so you can tunnel through the login node to the master's hostname. This
-   exposes the server to the cluster network (it is still protected by Jupyter's access token), so
-   prefer the localhost default when possible.
+.. note:: To bind to localhost only, pass ``--jupyter-ip 127.0.0.1``. The server is then off the
+   cluster network, but you must tunnel directly into the compute node, e.g.
+   ``ssh -J <hpc-login-host> -L 8889:localhost:8889 <node>``.
 ```
+
+## Reducing log noise
+
+If `jupyter.log` is noisy, note that the most verbose tracebacks come from optional integrations,
+not from sparkctl: language-server probing is disabled automatically, but a `jupyterlab` package
+installed in your environment runs a build check at startup that can log a Node/yarn error. It is
+harmless. Installing only the classic notebook (`pip install "sparkctl[jupyter]"`, without
+`jupyterlab`) avoids it.
 
 ## Stopping
 
