@@ -13,8 +13,12 @@ def setup_postgres_metastore(config: SparkConfig) -> None:
     pg_exists = bool(list(pg_data_dir.iterdir()))
     setup_script = config.compute.postgres.get_script_path("setup_metastore")
     assert config.runtime.postgres_password is not None
+    # Pass the password through the environment rather than the command line so that it does not
+    # appear in process listings (ps) on the node.
+    env = {**os.environ, "SPARKCTL_PG_PASSWORD": config.runtime.postgres_password}
     subprocess.run(
-        ["bash", str(setup_script), str(pg_exists).lower(), config.runtime.postgres_password],
+        ["bash", str(setup_script), str(pg_exists).lower()],
+        env=env,
         check=True,
     )
     if not pg_exists:
@@ -42,7 +46,7 @@ def init_hive(config: SparkConfig):
     if hive_home.exists():
         shutil.rmtree(hive_home)
     with tarfile.open(config.binaries.hive_tarball, "r:gz") as tar:
-        tar.extractall(path=config.directories.base)
+        tar.extractall(path=config.directories.base, filter="data")
     hive_conf = hive_home / "conf"
 
     shutil.copyfile(
@@ -62,7 +66,9 @@ def init_hive(config: SparkConfig):
             }
         )
         subprocess.run(
-            [f"{hive_home}/bin/schematool", "-dbType", "postgres", "-initSchema"], env=env
+            [f"{hive_home}/bin/schematool", "-dbType", "postgres", "-initSchema"],
+            env=env,
+            check=True,
         )
     finally:
         os.chdir(cwd)

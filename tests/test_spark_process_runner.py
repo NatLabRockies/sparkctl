@@ -122,9 +122,10 @@ def test_start_worker_processes_native_uses_ssh(tmp_path, monkeypatch):
     runner = SparkProcessRunner(config, SPARK_URL)
     runner.start_worker_processes(["node1", "node2"], 80)
 
+    # The workers are started concurrently, so the command order is not deterministic.
     assert len(commands) == 2
     assert [cmd[0] for cmd in commands] == ["ssh", "ssh"]
-    assert [cmd[1] for cmd in commands] == ["node1", "node2"]
+    assert {cmd[1] for cmd in commands} == {"node1", "node2"}
 
 
 def test_start_worker_processes_slurm_use_srun_disabled_uses_ssh(tmp_path, monkeypatch):

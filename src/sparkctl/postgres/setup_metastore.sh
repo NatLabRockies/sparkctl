@@ -1,6 +1,7 @@
 #!/bin/bash
 pg_exists=$1
-pg_password=$2
+# The password is passed through the environment so that it does not appear in process listings.
+pg_password=${SPARKCTL_PG_PASSWORD}
 module load apptainer
 
 if [ "${pg_exists}" != "true" ]; then

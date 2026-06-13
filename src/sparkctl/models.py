@@ -79,6 +79,10 @@ class SparkRuntimeParams(SparkctlBaseModel):
         default=False,
         description="Enable the Spark connect server.",
     )
+    connect_server_port: int = Field(
+        default=15002,
+        description="Port on which the Spark Connect server listens.",
+    )
     start_history_server: bool = Field(
         default=False,
         description="Enable the Spark history server.",

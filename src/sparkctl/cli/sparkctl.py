@@ -10,6 +10,7 @@ from loguru import logger
 from sparkctl.config import (
     DEFAULT_SETTINGS_FILENAME,
     RUNTIME,
+    SETTINGS_FILE_ENV_VAR,
     get_binaries,
     sparkctl_settings,
 )
@@ -39,7 +40,7 @@ from sparkctl.models import (
     "--file-level",
     default=sparkctl_settings.app.file_level,
     show_default=True,
-    help="Console log level",
+    help="File log level",
 )
 @click.option(
     "-r",
@@ -66,15 +67,15 @@ $ sparkctl default-config ~/apache-spark/spark-4.1.2-bin-hadoop3 ~/jdk-21.0.8 -e
 
 
 @click.command(epilog=_default_config_epilog)
-@click.argument("spark_path", type=click.Path(exists=True), callback=lambda *x: Path(x[2]))
-@click.argument("java_path", type=click.Path(exists=True), callback=lambda *x: Path(x[2]))
+@click.argument("spark_path", type=click.Path(exists=True, path_type=Path))
+@click.argument("java_path", type=click.Path(exists=True, path_type=Path))
 @click.option(
     "-d",
     "--directory",
     default=Path.home(),
     show_default=True,
     help="Directory in which to create the sparkctl config file.",
-    callback=lambda *x: Path(x[2]),
+    type=click.Path(path_type=Path),
 )
 @click.option(
     "-e",
@@ -89,19 +90,19 @@ $ sparkctl default-config ~/apache-spark/spark-4.1.2-bin-hadoop3 ~/jdk-21.0.8 -e
     "-H",
     "--hadoop-path",
     help="Directory containing Hadoop binaries.",
-    callback=lambda *x: None if x[2] is None else Path(x[2]),
+    type=click.Path(path_type=Path),
 )
 @click.option(
     "-h",
     "--hive-tarball",
     help="File containing Hive binaries.",
-    callback=lambda *x: None if x[2] is None else Path(x[2]),
+    type=click.Path(path_type=Path),
 )
 @click.option(
     "-p",
     "--postgresql-jar-file",
     help="Path to PostgreSQL jar file.",
-    callback=lambda *x: None if x[2] is None else Path(x[2]),
+    type=click.Path(path_type=Path),
 )
 def default_config(
     spark_path: Path,
@@ -128,6 +129,16 @@ def default_config(
     with open(filename, "w", encoding="utf-8") as f_out:
         toml.dump(data, f_out)
     print(f"Wrote sparkctl settings to {filename}")
+
+    # sparkctl only auto-discovers settings files in the home directory and the current working
+    # directory. A file written anywhere else must be pointed to explicitly, otherwise later
+    # commands silently fall back to defaults.
+    resolved = filename.resolve().parent
+    if resolved not in (Path.home().resolve(), Path.cwd().resolve()):
+        print(
+            f"\nNote: this location is not auto-discovered. Set {SETTINGS_FILE_ENV_VAR}={filename} "
+            "in your environment so sparkctl can find it."
+        )
 
 
 def _create_default_config(
@@ -157,8 +168,7 @@ $ sparkctl configure --local-storage --thrift-server\n
     default=Path(),
     show_default=True,
     help="Base directory for the cluster configuration",
-    type=click.Path(),
-    callback=lambda *x: Path(x[2]),
+    type=click.Path(path_type=Path),
 )
 @click.option(
     "-s",
@@ -166,7 +176,7 @@ $ sparkctl configure --local-storage --thrift-server\n
     default=Path("spark_scratch"),
     show_default=True,
     help=RuntimeDirectories.model_fields["spark_scratch"].description,
-    callback=lambda *x: Path(x[2]),
+    type=click.Path(path_type=Path),
 )
 @click.option(
     "-e",
@@ -217,7 +227,7 @@ $ sparkctl configure --local-storage --thrift-server\n
     "-t",
     "--spark-defaults-template-file",
     help=SparkRuntimeParams.model_fields["spark_defaults_template_file"].description,
-    callback=lambda *x: None if x[2] is None else Path(x[2]),
+    type=click.Path(path_type=Path),
 )
 @click.option(
     "--local-storage/--no-local-storage",
@@ -232,6 +242,18 @@ $ sparkctl configure --local-storage --thrift-server\n
     default=sparkctl_settings.runtime.get("start_connect_server"),
     show_default=True,
     help=SparkRuntimeParams.model_fields["start_connect_server"].description,
+)
+@click.option(
+    "--connect-server-port",
+    # Fall back to the model default so the option still works for users whose settings file
+    # predates this field (a missing key would otherwise bind the default to None).
+    default=sparkctl_settings.runtime.get(
+        "connect_server_port",
+        SparkRuntimeParams.model_fields["connect_server_port"].default,
+    ),
+    show_default=True,
+    type=int,
+    help=SparkRuntimeParams.model_fields["connect_server_port"].description,
 )
 @click.option(
     "--history-server/--no-history-server",
@@ -275,7 +297,7 @@ $ sparkctl configure --local-storage --thrift-server\n
     default=Path(),
     show_default=True,
     help=RuntimeDirectories.model_fields["metastore_dir"].description,
-    callback=lambda *x: Path(x[2]),
+    type=click.Path(path_type=Path),
 )
 @click.option(
     "-P",
@@ -319,6 +341,7 @@ def configure(
     spark_defaults_template_file: Path | None,
     local_storage: bool,
     connect_server: bool,
+    connect_server_port: int,
     history_server: bool,
     thrift_server: bool,
     spark_log_level: str | None,
@@ -333,7 +356,7 @@ def configure(
     setup_logging(
         filename="sparkctl.log",
         console_level=ctx.find_root().params["console_level"],
-        file_level=ctx.find_root().params["console_level"],
+        file_level=ctx.find_root().params["file_level"],
         mode="a",
     )
     if python_path is None and use_current_python:
@@ -355,6 +378,7 @@ def configure(
                 spark_defaults_template_file=spark_defaults_template_file,
                 use_local_storage=local_storage,
                 start_connect_server=connect_server,
+                connect_server_port=connect_server_port,
                 start_history_server=history_server,
                 start_thrift_server=thrift_server,
                 spark_log_level=spark_log_level,
@@ -408,8 +432,7 @@ $ sparkctl start --wait\n
     default=Path(),
     show_default=True,
     help="Base directory for the cluster configuration",
-    type=click.Path(),
-    callback=lambda *x: Path(x[2]),
+    type=click.Path(path_type=Path),
 )
 @click.option(
     "-t",
@@ -423,7 +446,7 @@ def start(ctx: click.Context, wait: bool, directory: Path, timeout: float | None
     setup_logging(
         filename="sparkctl.log",
         console_level=ctx.find_root().params["console_level"],
-        file_level=ctx.find_root().params["console_level"],
+        file_level=ctx.find_root().params["file_level"],
         mode="a",
     )
     mgr = ClusterManager.load(directory)
@@ -461,19 +484,32 @@ $ sparkctl stop --directory ./my-spark-config\n
     default=Path(),
     show_default=True,
     help="Base directory for the cluster configuration",
-    type=click.Path(),
-    callback=lambda *x: Path(x[2]),
+    type=click.Path(path_type=Path),
 )
-def stop(directory: Path) -> None:
+@click.pass_context
+def stop(ctx: click.Context, directory: Path) -> None:
     """Stop a Spark cluster."""
+    setup_logging(
+        filename="sparkctl.log",
+        console_level=ctx.find_root().params["console_level"],
+        file_level=ctx.find_root().params["file_level"],
+        mode="a",
+    )
     mgr = ClusterManager.load(directory)
     mgr.stop()
 
 
 @click.command()
-@click.argument("directory", callback=lambda *x: Path(x[2]))
-def clean(directory: Path) -> None:
+@click.argument("directory", type=click.Path(path_type=Path))
+@click.pass_context
+def clean(ctx: click.Context, directory: Path) -> None:
     """Delete all Spark runtime files in the directory."""
+    setup_logging(
+        filename="sparkctl.log",
+        console_level=ctx.find_root().params["console_level"],
+        file_level=ctx.find_root().params["file_level"],
+        mode="a",
+    )
     mgr = ClusterManager.load(directory)
     mgr.clean()
 
@@ -499,4 +535,4 @@ cli.add_command(default_config)
 cli.add_command(configure)
 cli.add_command(start)
 cli.add_command(stop)
-# cli.add_command(clean)
+cli.add_command(clean)

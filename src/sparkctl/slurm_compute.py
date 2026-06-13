@@ -3,13 +3,19 @@ import re
 import subprocess
 from pathlib import Path
 from socket import gethostname
-from typing import Any
 
 from sparkctl.compute_interface import ComputeInterface
+from sparkctl.models import SparkConfig
 
 
 class SlurmCompute(ComputeInterface):
     """Provides interface to Slurm."""
+
+    def __init__(self, config: SparkConfig) -> None:
+        super().__init__(config)
+        # The node list does not change during a job, so cache it to avoid repeatedly shelling
+        # out to squeue/scontrol (get_node_names is called several times per configure/stop).
+        self._node_names: list[str] | None = None
 
     def get_node_memory_overhead_gb(
         self, driver_memory_gb: int, node_memory_overhead_gb: int
@@ -17,7 +23,7 @@ class SlurmCompute(ComputeInterface):
         if self.is_heterogeneous_slurm_job():
             return node_memory_overhead_gb
 
-        return driver_memory_gb + self._config.runtime.node_memory_overhead_gb
+        return driver_memory_gb + node_memory_overhead_gb
 
     def get_num_workers(self) -> int:
         master_node = gethostname()
@@ -31,7 +37,9 @@ class SlurmCompute(ComputeInterface):
         return num_workers
 
     def get_node_names(self) -> list[str]:
-        return get_node_names(os.environ["SLURM_JOB_ID"])
+        if self._node_names is None:
+            self._node_names = get_node_names(os.environ["SLURM_JOB_ID"])
+        return self._node_names
 
     def get_worker_node_names(self) -> list[str]:
         node_names = self.get_node_names()
@@ -97,15 +105,12 @@ class SlurmCompute(ComputeInterface):
 
 def get_node_names(job_id: str) -> list[str]:
     # The squeue command will produce multiple lines if the job is heterogeneous.
-    job_id = os.environ["SLURM_JOB_ID"]
-    output: dict[str, Any] = {}
     proc = subprocess.run(
         ["squeue", "-j", job_id, "--format", '"%5D %1000N"', "-h"], capture_output=True, check=True
     )
     host_lists = [x.strip().split()[1] for x in proc.stdout.decode("utf-8").splitlines() if x]
     final: list[str] = []
     for hosts in host_lists:
-        output.clear()
         proc = subprocess.run(
             ["scontrol", "show", "hostnames", hosts], capture_output=True, check=True
         )

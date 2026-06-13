@@ -1,12 +1,17 @@
 import os
-from sparkctl.models import AppParams, ComputeParams
 from pathlib import Path
 
 from dynaconf import Dynaconf, Validator  # type: ignore
 from rich import print
 
 from sparkctl.exceptions import InvalidConfiguration
-from sparkctl.models import BinaryLocations, SparkRuntimeParams, SparkConfig
+from sparkctl.models import (
+    AppParams,
+    BinaryLocations,
+    ComputeParams,
+    SparkConfig,
+    SparkRuntimeParams,
+)
 
 DEFAULT_SETTINGS_FILENAME = ".sparkctl.toml"
 SETTINGS_FILE_ENV_VAR = "SPARKCTL_SETTINGS_FILE"
@@ -41,6 +46,7 @@ RUNTIME = {
     "node_memory_overhead_gb": SparkRuntimeParams.model_fields["node_memory_overhead_gb"].default,
     "use_local_storage": SparkRuntimeParams.model_fields["use_local_storage"].default,
     "start_connect_server": SparkRuntimeParams.model_fields["start_connect_server"].default,
+    "connect_server_port": SparkRuntimeParams.model_fields["connect_server_port"].default,
     "start_history_server": SparkRuntimeParams.model_fields["start_history_server"].default,
     "start_thrift_server": SparkRuntimeParams.model_fields["start_thrift_server"].default,
     "spark_log_level": SparkRuntimeParams.model_fields["spark_log_level"].default,

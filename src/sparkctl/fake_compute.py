@@ -15,7 +15,7 @@ class FakeCompute(ComputeInterface):
     def get_node_memory_overhead_gb(
         self, driver_memory_gb: int, node_memory_overhead_gb: int
     ) -> int:
-        return driver_memory_gb + self._config.runtime.node_memory_overhead_gb
+        return driver_memory_gb + node_memory_overhead_gb
 
     def get_num_workers(self) -> int:
         return 1

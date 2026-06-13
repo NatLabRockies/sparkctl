@@ -5,6 +5,7 @@ import signal
 import stat
 import subprocess
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
@@ -34,7 +35,11 @@ class SparkProcessRunner:
 
     def start_connect_server(self) -> None:
         """Start the Spark connect server."""
-        cmd = f"{self._start_connect_server_cmd()} --master {self._url}"
+        port = self._config.runtime.connect_server_port
+        cmd = (
+            f"{self._start_connect_server_cmd()} --master {self._url} "
+            f"--conf spark.connect.grpc.binding.port={port}"
+        )
         self._check_run_command(cmd)
 
     def stop_connect_server(self) -> int:
@@ -79,11 +84,15 @@ class SparkProcessRunner:
         start_script = self._sbin_cmd("start-worker.sh")
         tmp_script = self._make_start_worker_script(start_script, memory_gb)
         try:
-            for worker in workers:
-                cmd = ["ssh", worker, str(tmp_script)]
-                subprocess.run(cmd, check=True)
+            # Start the workers concurrently. ssh to each node is independent and otherwise
+            # serializes cluster startup across all worker nodes.
+            failures = self._run_ssh_commands(workers, str(tmp_script))
         finally:
             tmp_script.unlink()
+        if failures:
+            nodes = ", ".join(f"{worker} (rc={rc})" for worker, rc in failures.items())
+            msg = f"Failed to start Spark workers on the following node(s): {nodes}"
+            raise ExecutionError(msg)
 
     def stop_worker_process(self) -> int:
         """Stop the Spark workers."""
@@ -96,15 +105,34 @@ class SparkProcessRunner:
             return self._stop_worker_processes_srun(workers)
 
         tmp_script = self._make_stop_worker_script(self._config.resource_monitor.enabled)
-        ret = 0
-        for worker in workers:
-            cmd = ["ssh", worker, str(tmp_script)]
-            proc = subprocess.run(cmd)
-            if proc.returncode != 0:
-                logger.error("Failed to stop worker on {}: {}", worker, proc.returncode)
-                ret = proc.returncode
-        tmp_script.unlink()
-        return ret
+        try:
+            # Stop the workers concurrently; ssh to each node is independent.
+            failures = self._run_ssh_commands(workers, str(tmp_script))
+        finally:
+            tmp_script.unlink()
+        for worker, rc in failures.items():
+            logger.error("Failed to stop worker on {}: {}", worker, rc)
+        return next(iter(failures.values()), 0)
+
+    @staticmethod
+    def _run_ssh_commands(workers: list[str], script: str) -> dict[str, int]:
+        """Run the script on each worker over ssh concurrently.
+
+        Returns a mapping of worker node name to non-zero return code for any node that failed.
+        """
+
+        def run_one(worker: str) -> int:
+            return subprocess.run(["ssh", worker, script]).returncode
+
+        failures: dict[str, int] = {}
+        with ThreadPoolExecutor(max_workers=max(1, len(workers))) as executor:
+            futures = {executor.submit(run_one, worker): worker for worker in workers}
+            for future in as_completed(futures):
+                worker = futures[future]
+                rc = future.result()
+                if rc != 0:
+                    failures[worker] = rc
+        return failures
 
     def _use_srun(self) -> bool:
         if self._config.compute.environment != ComputeEnvironment.SLURM:

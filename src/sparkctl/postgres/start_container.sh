@@ -1,7 +1,8 @@
 #!/bin/bash
 pg_data_dir=$1
 pg_run_dir=$2
-pg_password=$3
+# The password is passed through the environment so that it does not appear in process listings.
+pg_password=${SPARKCTL_PG_PASSWORD}
 
 # TODO: Make these configurable.
 lustre_bind_mounts=" -B /nopt:/nopt \
