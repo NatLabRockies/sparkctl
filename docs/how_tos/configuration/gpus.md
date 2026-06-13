@@ -121,6 +121,43 @@ Pinning to the assigned address is what keeps two tasks on the same node from fi
 device. The `spark.task.resource.gpu.amount` value sparkctl writes controls how many tasks Spark
 will co-schedule on each GPU.
 
+## Monitor GPU usage while a job runs
+
+sparkctl's built-in resource monitor (`--resource-monitor`) only collects CPU, memory, disk, and
+network stats — **it does not capture GPU utilization**. Use NVIDIA's tools directly.
+
+GPU work happens on the **worker/executor nodes**, so monitor there, not on the node where you
+launched the driver. From a login node, attach a second shell to the same Slurm allocation:
+
+```console
+$ srun --overlap --jobid=$SLURM_JOB_ID --nodes=1 --pty bash
+```
+
+Then use any of:
+
+```console
+$ nvidia-smi -l 1                     # full table, refreshed every second
+$ nvidia-smi dmon -s pucvmet -d 1     # scrolling per-GPU metrics; best for watching a live job
+$ nvtop                               # htop-style TUI, incl. per-process GPU memory (if available)
+```
+
+To log the whole run to a CSV for later analysis:
+
+```console
+$ nvidia-smi --query-gpu=timestamp,index,utilization.gpu,utilization.memory,memory.used,power.draw \
+    --format=csv -l 1 > gpu_$(hostname).csv
+```
+
+To watch every node at once on a multi-node cluster (node names are in `conf/workers`):
+
+```console
+$ srun --overlap --jobid=$SLURM_JOB_ID --ntasks-per-node=1 nvidia-smi dmon -c 120 -d 1
+```
+
+Watch `utilization.gpu` while a query runs. Sustained high utilization means operators really are
+executing on the GPU; near-zero utilization while CPUs are busy means the work is falling back to
+the CPU — cross-check with `spark.rapids.sql.explain` (see above).
+
 ## When are GPUs worth it?
 
 GPUs are not a blanket speedup for Spark — they help some workloads dramatically and slow others
