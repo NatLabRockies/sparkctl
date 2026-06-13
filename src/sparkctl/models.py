@@ -197,6 +197,8 @@ class ComputeEnvironment(StrEnum):
     NATIVE = "native"
     # sparkctl detects workers through Slurm environment variables.
     SLURM = "slurm"
+    # Deterministic values for a single-node cluster, used for testing.
+    FAKE = "fake"
 
 
 class PostgresScripts(SparkctlBaseModel):
@@ -245,6 +247,14 @@ class ResourceMonitorConfig(SparkctlBaseModel):
 
 class ComputeParams(SparkctlBaseModel):
     environment: ComputeEnvironment = ComputeEnvironment.SLURM
+    use_srun: bool = Field(
+        default=True,
+        description="In a Slurm environment, launch Spark workers with srun instead of ssh. "
+        "srun forwards the full submission environment (modules, virtual environments, "
+        "LD_LIBRARY_PATH) to the worker nodes. Set to false to fall back to ssh if a site's "
+        "Slurm configuration does not work with sparkctl's srun invocation. Has no effect in a "
+        "native environment.",
+    )
     postgres: PostgresScripts = PostgresScripts()
 
 

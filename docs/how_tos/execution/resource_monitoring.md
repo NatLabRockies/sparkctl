@@ -1,6 +1,6 @@
 # How to to monitor Spark resource utilization
 
-sparkctl integrates with [rmon](https://github.com/NREL/resource_monitor) to monitor CPU, memory,
+sparkctl integrates with [rmon](https://github.com/NatLabRockies/resource_monitor) to monitor CPU, memory,
 disk, and network utilization of Spark.
 
 This page shows how to enable it.

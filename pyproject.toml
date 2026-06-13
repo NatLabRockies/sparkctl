@@ -58,9 +58,9 @@ dev = [
 ]
 
 [project.urls]
-Documentation = "https://github.com/NREL/sparkctl#readme"
-Issues = "https://github.com/NREL/sparkctl/issues"
-Source = "https://github.com/NREL/sparkctl"
+Documentation = "https://github.com/NatLabRockies/sparkctl#readme"
+Issues = "https://github.com/NatLabRockies/sparkctl/issues"
+Source = "https://github.com/NatLabRockies/sparkctl"
 
 [project.scripts]
 sparkctl = "sparkctl.cli.sparkctl:cli"
@@ -87,6 +87,9 @@ minversion = "6.0"
 addopts = "-ra"
 testpaths = ["tests"]
 norecursedirs = ["tests/data"]
+markers = [
+    "integration: tests that download real Spark/Java binaries or start a real Spark cluster; excluded from CI, run locally with -m integration",
+]
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.

@@ -18,7 +18,7 @@ spark_path = "/datasets/images/spark/spark-4.1.2-bin-hadoop3"
 java_path = "/datasets/images/spark/jdk-21.0.7+6"
 # Optional. Remove or leave commented if not deployed.
 # hadoop_path = "/datasets/images/spark/hadoop-3.4.1"
-# hive_tarball = "/datasets/images/spark/apache-hive-4.0.1-bin.tar.gz"
+# hive_tarball = "/datasets/images/spark/apache-hive-4.2.0-bin.tar.gz"
 # postgresql_jar_file = "/datasets/images/spark/postgresql-42.7.4.jar"
 
 [compute]

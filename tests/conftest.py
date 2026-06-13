@@ -8,16 +8,15 @@ from typing import Any
 
 import pytest
 import requests
-import toml
 
 from sparkctl.cli.sparkctl import _create_default_config
-from sparkctl.config import DEFAULT_SETTINGS_FILENAME
+from sparkctl.config import sparkctl_settings
 from sparkctl.models import ComputeEnvironment
 
 
 SPARK_DIR_NAME = "spark-4.1.2-bin-hadoop3"
 SPARK_GZ_NAME = f"{SPARK_DIR_NAME}.tgz"
-SPARK_URL = f"https://dlcdn.apache.org/spark/spark-4.1.2/{SPARK_GZ_NAME}"
+SPARK_URL = f"https://archive.apache.org/dist/spark/spark-4.1.2/{SPARK_GZ_NAME}"
 SPARK_DIR_GZ = Path("tests") / "data" / SPARK_GZ_NAME
 SPARK_DIR = Path("tests") / "data" / SPARK_DIR_NAME
 
@@ -27,9 +26,9 @@ HADOOP_URL = f"https://archive.apache.org/dist/hadoop/common/{HADOOP_DIR_NAME}/{
 HADOOP_DIR_GZ = Path("tests") / "data" / HADOOP_GZ_NAME
 HADOOP_DIR = Path("tests") / "data" / HADOOP_DIR_NAME
 
-HIVE_DIR_NAME = "apache-hive-4.0.1-bin"
+HIVE_DIR_NAME = "apache-hive-4.2.0-bin"
 HIVE_GZ_NAME = f"{HIVE_DIR_NAME}.tar.gz"
-HIVE_URL = f"https://downloads.apache.org/hive/hive-4.0.1/{HIVE_GZ_NAME}"
+HIVE_URL = f"https://archive.apache.org/dist/hive/hive-4.2.0/{HIVE_GZ_NAME}"
 HIVE_DIR_GZ = Path("tests") / "data" / HIVE_GZ_NAME
 HIVE_DIR = Path("tests") / "data" / HIVE_DIR_NAME
 
@@ -64,14 +63,14 @@ TARBALLS: list[dict[str, Any]] = [
 
 if sys.platform == "linux":
     JAVA_DIR_NAME = "jdk-21.0.7"
-    JAVA_GZ_NAME = "jdk-21_linux-x64_bin.tar.gz"
-    JAVA_URL = f"https://download.oracle.com/java/21/latest/{JAVA_GZ_NAME}"
+    JAVA_GZ_NAME = "jdk-21.0.7_linux-x64_bin.tar.gz"
+    JAVA_URL = f"https://download.oracle.com/java/21/archive/{JAVA_GZ_NAME}"
     JAVA_DIR_GZ = Path("tests") / "data" / JAVA_GZ_NAME
     JAVA_DIR = Path("tests") / "data" / JAVA_DIR_NAME
 elif sys.platform == "darwin":
     JAVA_DIR_NAME = "jdk-21.0.7.jdk"
-    JAVA_GZ_NAME = "jdk-21_macos-aarch64_bin.tar.gz"
-    JAVA_URL = f"https://download.oracle.com/java/21/latest/{JAVA_GZ_NAME}"
+    JAVA_GZ_NAME = "jdk-21.0.7_macos-aarch64_bin.tar.gz"
+    JAVA_URL = f"https://download.oracle.com/java/21/archive/{JAVA_GZ_NAME}"
     JAVA_DIR_GZ = Path("tests") / "data" / JAVA_GZ_NAME
     JAVA_DIR = Path("tests") / "data" / JAVA_DIR_NAME
 else:
@@ -90,6 +89,12 @@ TARBALLS.append(
 
 
 def pytest_sessionstart(session):
+    # The large Spark/Java/Hadoop/Hive downloads are only needed by the integration tests
+    # (those that download real binaries or start a real cluster). Skip them when integration
+    # tests are deselected, such as the unit-only run in CI (pytest -m "not integration").
+    if "not integration" in (session.config.option.markexpr or ""):
+        return
+
     base_dir = Path("tests") / "data"
     base_dir.mkdir(exist_ok=True)
     in_ci = os.getenv("CI", "false") == "true"
@@ -139,7 +144,7 @@ def extract_tarball(src_file: Path, extract_dir: Path) -> None:
 
 @pytest.fixture
 def setup_local_env(tmp_path):
-    config = _create_default_config(SPARK_DIR, JAVA_DIR, tmp_path, ComputeEnvironment.NATIVE)
+    config = _create_default_config(SPARK_DIR, JAVA_DIR, tmp_path, ComputeEnvironment.FAKE)
     config.binaries.spark_path = SPARK_DIR
     match sys.platform:
         case "linux":
@@ -152,10 +157,16 @@ def setup_local_env(tmp_path):
     config.binaries.hive_tarball = HIVE_DIR
     config.binaries.postgresql_jar_file = POSTGRES_JAR_FILE
     data = config.model_dump(mode="json", exclude={"directories"})
-    settings_file = tmp_path / DEFAULT_SETTINGS_FILENAME
-    with open(settings_file, "w", encoding="utf-8") as f_out:
-        toml.dump(data, f_out)
-    os.environ["ROOT_PATH_FOR_DYNACONF"] = str(tmp_path)
-    yield config, tmp_path
-    os.environ.pop("ROOT_PATH_FOR_DYNACONF")
-    shutil.rmtree(tmp_path)
+    # Inject the configuration into the Dynaconf singleton so that the CLI and
+    # make_default_spark_config() use it instead of any real ~/.sparkctl.toml. The singleton is
+    # built at import time, so setting an environment variable here would not take effect.
+    originals = {key: sparkctl_settings.get(key) for key in ("BINARIES", "RUNTIME", "COMPUTE")}
+    sparkctl_settings.set("BINARIES", data["binaries"])
+    sparkctl_settings.set("RUNTIME", data["runtime"])
+    sparkctl_settings.set("COMPUTE", data["compute"])
+    try:
+        yield config, tmp_path
+    finally:
+        for key, value in originals.items():
+            sparkctl_settings.set(key, value)
+        shutil.rmtree(tmp_path, ignore_errors=True)

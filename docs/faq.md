@@ -52,6 +52,20 @@ environment variable before running your application:
 $ export PYSPARK_PYTHON=$(which python)
 ```
 
+### My workers fail to find a shared library (e.g. `libpython3.11.so`).
+
+This happens when the Python (or other dependency) you loaded before allocating nodes relies on an
+environment that is not present on the worker nodes by default. In a Slurm environment, sparkctl
+launches workers with `srun`, which forwards your full submission environment — environment
+modules, virtual environments, and `LD_LIBRARY_PATH` — to the worker nodes. This usually resolves
+such errors without extra configuration.
+
+If your site's Slurm configuration does not work with sparkctl's `srun` invocation, you can fall
+back to launching workers over `ssh` by setting `use_srun = false` in the `[compute]` section of
+your `~/.sparkctl.toml`. Note that `ssh` does not forward your environment, so you may then need to
+export the relevant variables yourself, for example through `spark-env.sh` in the generated
+`./conf/` directory.
+
 ### I'm getting an error about mismatched Spark versions.
 
 If you are running pyspark/spark-submit after installing via `pip install sparkctl[pyspark]`,

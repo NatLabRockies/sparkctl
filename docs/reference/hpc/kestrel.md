@@ -7,7 +7,7 @@ This page contains information specific to Kestrel that users must consider.
 Spark is installed on Kestrel. Use these locations when your configure your environment.
 ```
 /datasets/images/apache_spark
-├── apache-hive-4.0.1-bin.tar.gz
+├── apache-hive-4.2.0-bin.tar.gz
 ├── hadoop-3.4.1/
 ├── jdk-21.0.7/
 ├── postgresql-42.7.4.jar
@@ -19,7 +19,7 @@ $ sparkctl default-config \
     /datasets/images/apache_spark/spark-4.1.2-bin-hadoop3 \
     /datasets/images/apache_spark/jdk-21.0.7 \
     --hadoop-path /datasets/images/apache_spark/hadoop-3.4.1 \
-    --hive-tarball /datasets/images/apache_spark/apache-hive-4.0.1-bin.tar.gz \
+    --hive-tarball /datasets/images/apache_spark/apache-hive-4.2.0-bin.tar.gz \
     --postgresql-jar-file /datasets/images/apache_spark/postgresql-42.7.4.jar \
     --compute-environment slurm
 ```

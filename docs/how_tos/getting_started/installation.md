@@ -41,7 +41,7 @@
 4. Optional, install from the main branch (or substitute another branch or tag).
 
    ```console
-   $ pip install git+https://github.com/NREL/sparkctl.git@main
+   $ pip install git+https://github.com/NatLabRockies/sparkctl.git@main
    ```
 
 5. Create a one-time sparkctl default configuration file. The parameters will vary based on your
