@@ -127,6 +127,15 @@ class SparkRuntimeParams(SparkctlBaseModel):
         description="Expose Spark metrics in Prometheus format through the existing web UI ports "
         "(no extra ports are opened).",
     )
+    enable_metrics_csv: bool = Field(
+        default=False,
+        description="Write Spark metrics to CSV files in <base>/metrics-csv. Unlike the Prometheus "
+        "sink, this leaves a durable record on disk after the cluster shuts down.",
+    )
+    metrics_csv_period: int = Field(
+        default=10,
+        description="Interval in seconds at which the CSV metrics sink writes samples.",
+    )
     enable_gpus: bool = Field(
         default=False,
         description="EXPERIMENTAL (untested): Enable GPU-aware scheduling. Spark workers advertise "

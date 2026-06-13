@@ -34,3 +34,27 @@ $ curl http://localhost:4040/metrics/executors/prometheus
 .. tip:: Combine this with the :doc:`reverse proxy <../configuration/web_ui_reverse_proxy>` to
    reach the worker and application endpoints through the master node on an HPC cluster.
 ```
+
+## Write metrics to CSV files
+
+The Prometheus sink is pull-based: it only exposes metrics over HTTP and keeps nothing on disk, so
+the data is gone once the cluster shuts down. To keep a durable record, enable the CSV sink, which
+periodically writes one CSV file per metric:
+
+```console
+$ sparkctl configure --metrics-csv
+```
+
+This writes the metrics to `<base>/metrics-csv` (alongside `stats-output`) and survives cluster
+teardown, which fits the ephemeral-allocation model better than relying on a live Prometheus
+scraper. Change the sampling interval with `--metrics-csv-period` (seconds):
+
+```console
+$ sparkctl configure --metrics-csv --metrics-csv-period 30
+```
+
+The two sinks are independent and can be combined; they share a single `metrics.properties`:
+
+```console
+$ sparkctl configure --prometheus --metrics-csv
+```

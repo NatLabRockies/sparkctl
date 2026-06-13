@@ -325,6 +325,24 @@ $ sparkctl configure --local-storage --thrift-server\n
     help=SparkRuntimeParams.model_fields["enable_prometheus"].description,
 )
 @click.option(
+    "--metrics-csv/--no-metrics-csv",
+    is_flag=True,
+    default=sparkctl_settings.runtime.get(
+        "enable_metrics_csv", SparkRuntimeParams.model_fields["enable_metrics_csv"].default
+    ),
+    show_default=True,
+    help=SparkRuntimeParams.model_fields["enable_metrics_csv"].description,
+)
+@click.option(
+    "--metrics-csv-period",
+    default=sparkctl_settings.runtime.get(
+        "metrics_csv_period", SparkRuntimeParams.model_fields["metrics_csv_period"].default
+    ),
+    show_default=True,
+    type=int,
+    help=SparkRuntimeParams.model_fields["metrics_csv_period"].description,
+)
+@click.option(
     "--gpus/--no-gpus",
     is_flag=True,
     default=sparkctl_settings.runtime.get(
@@ -431,6 +449,8 @@ def configure(
     reverse_proxy: bool,
     reverse_proxy_url: str | None,
     prometheus: bool,
+    metrics_csv: bool,
+    metrics_csv_period: int,
     gpus: bool,
     gpus_per_node: int | None,
     rapids: bool,
@@ -476,6 +496,8 @@ def configure(
                 enable_reverse_proxy=reverse_proxy,
                 reverse_proxy_url=reverse_proxy_url,
                 enable_prometheus=prometheus,
+                enable_metrics_csv=metrics_csv,
+                metrics_csv_period=metrics_csv_period,
                 enable_gpus=gpus,
                 gpus_per_node=gpus_per_node,
                 enable_rapids=rapids,

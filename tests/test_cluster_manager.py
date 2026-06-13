@@ -39,6 +39,37 @@ def test_configure_reverse_proxy_and_prometheus(setup_local_env: tuple[SparkConf
     assert "PrometheusServlet" in metrics
 
 
+def test_configure_metrics_csv(setup_local_env: tuple[SparkConfig, Path]):
+    config, tmp_path = setup_local_env
+    config.directories.base = tmp_path
+    config.directories.spark_scratch = tmp_path / "spark_scratch"
+    config.runtime.enable_metrics_csv = True
+    config.runtime.metrics_csv_period = 30
+    mgr = ClusterManager.from_config(config)
+    mgr.configure()
+    metrics = config.directories.get_metrics_properties_file().read_text(encoding="utf-8")
+    assert "org.apache.spark.metrics.sink.CsvSink" in metrics
+    assert f"*.sink.csv.directory={tmp_path / 'metrics-csv'}" in metrics
+    assert "*.sink.csv.period=30" in metrics
+    assert (tmp_path / "metrics-csv").is_dir()
+    # The CSV sink alone does not need the Prometheus servlet setting.
+    defaults = config.directories.get_spark_defaults_file().read_text(encoding="utf-8")
+    assert "spark.ui.prometheus.enabled" not in defaults
+
+
+def test_configure_prometheus_and_csv_compose(setup_local_env: tuple[SparkConfig, Path]):
+    config, tmp_path = setup_local_env
+    config.directories.base = tmp_path
+    config.directories.spark_scratch = tmp_path / "spark_scratch"
+    config.runtime.enable_prometheus = True
+    config.runtime.enable_metrics_csv = True
+    mgr = ClusterManager.from_config(config)
+    mgr.configure()
+    metrics = config.directories.get_metrics_properties_file().read_text(encoding="utf-8")
+    assert "PrometheusServlet" in metrics
+    assert "CsvSink" in metrics
+
+
 def test_configure_gpus_without_detection_fails(setup_local_env: tuple[SparkConfig, Path]):
     config, tmp_path = setup_local_env
     config.directories.spark_scratch = tmp_path / "spark_scratch"
