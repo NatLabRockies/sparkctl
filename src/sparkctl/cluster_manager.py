@@ -336,7 +336,7 @@ class ClusterManager:
         if self._config.runtime.start_jupyter:
             runner.start_jupyter_server()
             tracker.started_jupyter = True
-            logger.info("Started JupyterLab server")
+            logger.info("Started Jupyter server")
 
         worker_memory_gb = self._get_worker_memory_gb(self._get_runtime_spark_driver_memory_gb())
         if is_single_node_cluster:

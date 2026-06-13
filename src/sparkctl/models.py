@@ -103,12 +103,17 @@ class SparkRuntimeParams(SparkctlBaseModel):
     )
     start_jupyter: bool = Field(
         default=False,
-        description="Start a JupyterLab server on the master node. Pre-wired to the Spark Connect "
+        description="Start a Jupyter server on the master node. Pre-wired to the Spark Connect "
         "server when it is enabled (the notebook's SparkSession connects automatically).",
+    )
+    jupyter_command: str = Field(
+        default="notebook",
+        description="Jupyter frontend to launch, i.e. the `jupyter <command>` subcommand. "
+        "Defaults to the classic 'notebook'; use 'lab' for JupyterLab.",
     )
     jupyter_port: int = Field(
         default=8889,
-        description="Port on which the JupyterLab server listens.",
+        description="Port on which the Jupyter server listens.",
     )
     enable_reverse_proxy: bool = Field(
         default=False,
