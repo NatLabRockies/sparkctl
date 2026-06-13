@@ -39,9 +39,19 @@ class BinaryLocations(SparkctlBaseModel):
     postgresql_jar_file: Path | None = Field(
         default=None, description="Path to the PostgreSQL jar file."
     )
+    rapids_jar_file: Path | None = Field(
+        default=None,
+        description="Path to the NVIDIA RAPIDS Accelerator for Apache Spark jar file. Only "
+        "required to enable RAPIDS GPU acceleration (experimental).",
+    )
 
     @field_validator(
-        "spark_path", "java_path", "hadoop_path", "hive_tarball", "postgresql_jar_file"
+        "spark_path",
+        "java_path",
+        "hadoop_path",
+        "hive_tarball",
+        "postgresql_jar_file",
+        "rapids_jar_file",
     )
     @classmethod
     def make_absolute(cls, val: Path | None) -> Path | None:
@@ -90,6 +100,57 @@ class SparkRuntimeParams(SparkctlBaseModel):
     start_thrift_server: bool = Field(
         default=False,
         description="Enable the Thrift server to connect a SQL client.",
+    )
+    start_jupyter: bool = Field(
+        default=False,
+        description="Start a JupyterLab server on the master node. Pre-wired to the Spark Connect "
+        "server when it is enabled (the notebook's SparkSession connects automatically).",
+    )
+    jupyter_port: int = Field(
+        default=8889,
+        description="Port on which the JupyterLab server listens.",
+    )
+    enable_reverse_proxy: bool = Field(
+        default=False,
+        description="Run the Spark master as a reverse proxy for the worker and application web "
+        "UIs. Useful on HPC clusters where the compute nodes are not directly reachable, so the "
+        "UIs are served through the master node only.",
+    )
+    reverse_proxy_url: str | None = Field(
+        default=None,
+        description="External URL used to reach the Spark master UI when reverse proxy is enabled "
+        "and the master is itself behind another front-end proxy. Leave unset to serve relative "
+        "links (recommended when reaching the master through an SSH tunnel).",
+    )
+    enable_prometheus: bool = Field(
+        default=False,
+        description="Expose Spark metrics in Prometheus format through the existing web UI ports "
+        "(no extra ports are opened).",
+    )
+    enable_gpus: bool = Field(
+        default=False,
+        description="EXPERIMENTAL (untested): Enable GPU-aware scheduling. Spark workers advertise "
+        "GPUs and executors/tasks request them. Requires GPUs on the worker nodes.",
+    )
+    gpus_per_node: int | None = Field(
+        default=None,
+        description="EXPERIMENTAL (untested): Number of GPUs available on each worker node. "
+        "Auto-detected from the compute environment by default.",
+    )
+    executor_gpu_amount: int = Field(
+        default=1,
+        description="EXPERIMENTAL (untested): Number of GPUs assigned to each executor.",
+    )
+    task_gpu_amount: float | None = Field(
+        default=None,
+        description="EXPERIMENTAL (untested): GPUs assigned to each task. Defaults to "
+        "executor_gpu_amount / executor_cores so that concurrent tasks share an executor's GPUs.",
+    )
+    enable_rapids: bool = Field(
+        default=False,
+        description="EXPERIMENTAL (untested): Enable the NVIDIA RAPIDS Accelerator for Apache "
+        "Spark to offload SQL/DataFrame operations to GPUs. Implies enable_gpus and requires "
+        "binaries.rapids_jar_file.",
     )
     spark_log_level: str | None = Field(
         default=None,
@@ -180,6 +241,14 @@ class RuntimeDirectories(SparkctlBaseModel):
     def get_spark_log_file(self) -> Path:
         """Return the file path to log properties file"""
         return self.get_spark_conf_dir() / "log4j2.properties"
+
+    def get_metrics_properties_file(self) -> Path:
+        """Return the file path to metrics.properties"""
+        return self.get_spark_conf_dir() / "metrics.properties"
+
+    def get_gpu_discovery_script_file(self) -> Path:
+        """Return the file path to the GPU discovery script."""
+        return self.get_spark_conf_dir() / "get_gpus_resources.sh"
 
     def get_workers_file(self) -> Path:
         """Return the file path to workers"""
@@ -297,4 +366,5 @@ class StatusTracker(SparkctlBaseModel):
     started_connect_server: bool = False
     started_history_server: bool = False
     started_thrift_server: bool = False
+    started_jupyter: bool = False
     started_postgres: bool = False

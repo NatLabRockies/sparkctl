@@ -2,6 +2,7 @@ import fileinput
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 from contextlib import contextmanager
@@ -123,6 +124,8 @@ class ClusterManager:
             base / self.STATUS_FILENAME,
             base / "srun_workers.pid",
             base / "srun_workers.log",
+            base / "jupyter.pid",
+            base / "jupyter.log",
         ]
         for directory in directories:
             if directory.exists():
@@ -235,22 +238,7 @@ class ClusterManager:
             self._start(runner, tracker)
         except Exception:
             logger.error("Stopping all processes after unhandled exception")
-            if tracker.started_master:
-                runner.stop_master_process()
-            if tracker.started_connect_server:
-                runner.stop_connect_server()
-            if tracker.started_history_server:
-                runner.stop_history_server()
-            if tracker.started_thrift_server:
-                runner.stop_thrift_server()
-            if tracker.started_workers:
-                workers = self._read_workers()
-                if len(workers) == 1:
-                    runner.stop_worker_process()
-                else:
-                    runner.stop_worker_processes(workers)
-            if tracker.started_postgres:
-                self._stop_postgres()
+            self._rollback_started_processes(runner, tracker)
             raise
 
         if print_env_paths:
@@ -263,6 +251,29 @@ class ClusterManager:
 
         os.environ["SPARK_CONF_DIR"] = str(self._config.directories.get_spark_conf_dir())
         os.environ["JAVA_HOME"] = str(self._config.binaries.java_path)
+
+    def _rollback_started_processes(
+        self, runner: SparkProcessRunner, tracker: StatusTracker
+    ) -> None:
+        """Stop any processes that were started before an unhandled exception."""
+        if tracker.started_master:
+            runner.stop_master_process()
+        if tracker.started_connect_server:
+            runner.stop_connect_server()
+        if tracker.started_history_server:
+            runner.stop_history_server()
+        if tracker.started_thrift_server:
+            runner.stop_thrift_server()
+        if tracker.started_jupyter:
+            runner.stop_jupyter_server()
+        if tracker.started_workers:
+            workers = self._read_workers()
+            if len(workers) == 1:
+                runner.stop_worker_process()
+            else:
+                runner.stop_worker_processes(workers)
+        if tracker.started_postgres:
+            self._stop_postgres()
 
     @contextmanager
     def managed_cluster(self) -> Generator[SparkSession, None, None]:
@@ -321,6 +332,11 @@ class ClusterManager:
             tracker.started_thrift_server = True
             logger.info("Started Apache Thrift Server")
 
+        if self._config.runtime.start_jupyter:
+            runner.start_jupyter_server()
+            tracker.started_jupyter = True
+            logger.info("Started JupyterLab server")
+
         worker_memory_gb = self._get_worker_memory_gb(self._get_runtime_spark_driver_memory_gb())
         if is_single_node_cluster:
             runner.start_worker_process(worker_memory_gb)
@@ -362,6 +378,7 @@ class ClusterManager:
                 started_connect_server=rt.start_connect_server,
                 started_history_server=self._is_history_server_enabled(),
                 started_thrift_server=rt.start_thrift_server,
+                started_jupyter=rt.start_jupyter,
                 started_postgres=rt.enable_postgres_hive_metastore,
             )
         url = make_spark_url(gethostname())
@@ -374,6 +391,8 @@ class ClusterManager:
             runner.stop_history_server()
         if tracker.started_thrift_server:
             runner.stop_thrift_server()
+        if tracker.started_jupyter:
+            runner.stop_jupyter_server()
         if tracker.started_workers:
             workers = self._intf.get_worker_node_names()
             is_single_node_cluster = self._is_single_node_cluster(workers)
@@ -439,6 +458,18 @@ class ClusterManager:
 
         if rt_params.start_history_server:
             self._enable_history_server(defaults_file)
+
+        if rt_params.enable_reverse_proxy:
+            self._enable_reverse_proxy(defaults_file)
+
+        if rt_params.enable_prometheus:
+            self._enable_prometheus(defaults_file)
+
+        # RAPIDS requires GPU scheduling, so enabling it implies enabling GPUs.
+        if rt_params.enable_gpus or rt_params.enable_rapids:
+            self._enable_gpus(defaults_file)
+        if rt_params.enable_rapids:
+            self._enable_rapids(defaults_file)
 
         if rt_params.enable_hive_metastore or rt_params.enable_postgres_hive_metastore:
             self._enable_metastore(defaults_file)
@@ -564,6 +595,126 @@ spark.history.fs.logDirectory file://{events_dir}
 """
             )
         logger.info("Enabled Spark history server at {}", events_dir)
+
+    def _enable_reverse_proxy(self, defaults_file: Path) -> None:
+        with open(defaults_file, "a") as f_out:
+            f_out.write("\nspark.ui.reverseProxy true\n")
+            url = self._config.runtime.reverse_proxy_url
+            if url is not None:
+                f_out.write(f"spark.ui.reverseProxyUrl {url}\n")
+        logger.info(
+            "Enabled the Spark master reverse proxy for worker and application UIs. "
+            "Access all UIs through the master web UI (default port 8080)."
+        )
+
+    def _enable_prometheus(self, defaults_file: Path) -> None:
+        metrics_file = self._config.directories.get_metrics_properties_file()
+        # Spark automatically loads $SPARK_CONF_DIR/metrics.properties, so writing it into the conf
+        # directory is enough to register the Prometheus sink on every component.
+        metrics_file.write_text(
+            """# Generated by sparkctl. Exposes Spark metrics in Prometheus format on the existing
+# web UI ports (no additional ports are opened).
+*.sink.prometheusServlet.class=org.apache.spark.metrics.sink.PrometheusServlet
+*.sink.prometheusServlet.path=/metrics/prometheus
+master.sink.prometheusServlet.path=/metrics/master/prometheus
+applications.sink.prometheusServlet.path=/metrics/applications/prometheus
+""",
+            encoding="utf-8",
+        )
+        with open(defaults_file, "a") as f_out:
+            f_out.write(
+                """
+spark.ui.prometheus.enabled true
+spark.executor.processTreeMetrics.enabled true
+"""
+            )
+        logger.info(
+            "Enabled Prometheus metrics. Scrape /metrics/prometheus on the master/worker UIs and "
+            "/metrics/executors/prometheus on the driver UI (port 4040)."
+        )
+
+    def _enable_gpus(self, defaults_file: Path) -> None:
+        rt_params = self._config.runtime
+        num_gpus = rt_params.gpus_per_node
+        if num_gpus is None:
+            num_gpus = self._intf.get_worker_num_gpus()
+        if num_gpus <= 0:
+            msg = (
+                "GPU scheduling was enabled but no GPUs were detected on the worker nodes. "
+                "Set runtime.gpus_per_node explicitly or request GPUs in the allocation."
+            )
+            raise InvalidConfiguration(msg)
+
+        discovery_script = self._write_gpu_discovery_script()
+        executor_gpu_amount = rt_params.executor_gpu_amount
+        if executor_gpu_amount > num_gpus:
+            msg = (
+                f"executor_gpu_amount ({executor_gpu_amount}) cannot exceed the number of GPUs "
+                f"per node ({num_gpus})."
+            )
+            raise InvalidConfiguration(msg)
+        if rt_params.task_gpu_amount is not None:
+            task_gpu_amount = rt_params.task_gpu_amount
+        else:
+            # Let the cores in an executor share that executor's GPU(s) by default.
+            task_gpu_amount = executor_gpu_amount / rt_params.executor_cores
+        with open(defaults_file, "a") as f_out:
+            f_out.write(
+                f"""
+spark.worker.resource.gpu.amount {num_gpus}
+spark.worker.resource.gpu.discoveryScript {discovery_script}
+spark.executor.resource.gpu.amount {executor_gpu_amount}
+spark.executor.resource.gpu.discoveryScript {discovery_script}
+spark.task.resource.gpu.amount {task_gpu_amount}
+"""
+            )
+        logger.warning(
+            "Enabled EXPERIMENTAL (untested) GPU scheduling with {} GPU(s) per node.", num_gpus
+        )
+
+    def _write_gpu_discovery_script(self) -> Path:
+        script = self._config.directories.get_gpu_discovery_script_file()
+        # Spark calls this script on each worker and expects JSON describing the available GPU
+        # addresses. This mirrors Spark's example getGpusResources.sh.
+        script.write_text(
+            """#!/usr/bin/env bash
+# Generated by sparkctl. Reports the GPUs visible to Spark in the format it expects.
+ADDRS=$(nvidia-smi --query-gpu=index --format=csv,noheader | sed -e ':a' -e 'N' -e '$!ba' \\
+    -e 's/\\n/","/g')
+echo "{\\"name\\": \\"gpu\\", \\"addresses\\": [\\"$ADDRS\\"]}"
+""",
+            encoding="utf-8",
+        )
+        script.chmod(script.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP)
+        return script
+
+    def _enable_rapids(self, defaults_file: Path) -> None:
+        rapids_jar = self._config.binaries.rapids_jar_file
+        if rapids_jar is None:
+            msg = (
+                "RAPIDS acceleration was enabled but binaries.rapids_jar_file is not set. "
+                "Download the RAPIDS Accelerator jar and set its path "
+                "(see https://nvidia.github.io/spark-rapids/docs/download.html)."
+            )
+            raise InvalidConfiguration(msg)
+        if not Path(rapids_jar).exists():
+            msg = f"The RAPIDS jar file does not exist: {rapids_jar}"
+            raise InvalidConfiguration(msg)
+        with open(defaults_file, "a") as f_out:
+            # Distribute the plugin jar to executors and add it to the driver/executor classpath.
+            # Using spark.jars avoids clobbering spark.{driver,executor}.extraClassPath, which the
+            # Postgres metastore may also set.
+            f_out.write(
+                f"""
+spark.jars {rapids_jar}
+spark.plugins com.nvidia.spark.SQLPlugin
+spark.rapids.sql.enabled true
+spark.rapids.sql.concurrentGpuTasks 1
+"""
+            )
+        logger.warning(
+            "Enabled EXPERIMENTAL (untested) RAPIDS GPU acceleration using {}", rapids_jar
+        )
 
     def _get_runtime_spark_driver_memory_gb(self) -> int:
         # Note that spark-defaults.conf takes precedence over our config.json.

@@ -7,4 +7,5 @@
 
     hive_metastore
     tableau
+    jupyter
 ```

@@ -41,6 +41,10 @@ class ComputeInterface(abc.ABC):
         """Return the number of CPUs in the compute node"""
 
     @abc.abstractmethod
+    def get_worker_num_gpus(self) -> int:
+        """Return the number of GPUs in the compute node. Returns 0 if none are detected."""
+
+    @abc.abstractmethod
     def is_heterogeneous_slurm_job(self) -> bool:
         """Return True if the environment indicates a heterogeneous Slurm job."""
 

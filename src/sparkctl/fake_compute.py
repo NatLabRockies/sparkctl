@@ -35,6 +35,9 @@ class FakeCompute(ComputeInterface):
     def get_worker_num_cpus(self) -> int:
         return 12
 
+    def get_worker_num_gpus(self) -> int:
+        return 0
+
     def is_heterogeneous_slurm_job(self) -> bool:
         return False
 

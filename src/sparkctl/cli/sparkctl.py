@@ -104,6 +104,12 @@ $ sparkctl default-config ~/apache-spark/spark-4.1.2-bin-hadoop3 ~/jdk-21.0.8 -e
     help="Path to PostgreSQL jar file.",
     type=click.Path(path_type=Path),
 )
+@click.option(
+    "-R",
+    "--rapids-jar-file",
+    help=BinaryLocations.model_fields["rapids_jar_file"].description,
+    type=click.Path(path_type=Path),
+)
 def default_config(
     spark_path: Path,
     java_path: Path,
@@ -112,6 +118,7 @@ def default_config(
     hadoop_path: Path | None,
     hive_tarball: Path | None,
     postgresql_jar_file: Path | None,
+    rapids_jar_file: Path | None,
 ):
     """Create a sparkctl config file that defines paths to Spark binaries.
     This is a one-time requirement when installing sparkctl in a new environment."""
@@ -122,6 +129,8 @@ def default_config(
         config.binaries.hive_tarball = hive_tarball
     if postgresql_jar_file is not None:
         config.binaries.postgresql_jar_file = postgresql_jar_file
+    if rapids_jar_file is not None:
+        config.binaries.rapids_jar_file = rapids_jar_file
     data = config.model_dump(mode="json", exclude={"directories"})
     # Don't hard-code the password globally.
     data["runtime"].pop("postgres_password")
@@ -270,6 +279,79 @@ $ sparkctl configure --local-storage --thrift-server\n
     help=SparkRuntimeParams.model_fields["start_thrift_server"].description,
 )
 @click.option(
+    "--jupyter/--no-jupyter",
+    is_flag=True,
+    # Fall back to the model default so options added after a user's settings file was written
+    # still work (a missing key would otherwise bind the default to None).
+    default=sparkctl_settings.runtime.get(
+        "start_jupyter", SparkRuntimeParams.model_fields["start_jupyter"].default
+    ),
+    show_default=True,
+    help=SparkRuntimeParams.model_fields["start_jupyter"].description,
+)
+@click.option(
+    "--jupyter-port",
+    default=sparkctl_settings.runtime.get(
+        "jupyter_port", SparkRuntimeParams.model_fields["jupyter_port"].default
+    ),
+    show_default=True,
+    type=int,
+    help=SparkRuntimeParams.model_fields["jupyter_port"].description,
+)
+@click.option(
+    "--reverse-proxy/--no-reverse-proxy",
+    is_flag=True,
+    default=sparkctl_settings.runtime.get(
+        "enable_reverse_proxy", SparkRuntimeParams.model_fields["enable_reverse_proxy"].default
+    ),
+    show_default=True,
+    help=SparkRuntimeParams.model_fields["enable_reverse_proxy"].description,
+)
+@click.option(
+    "--reverse-proxy-url",
+    default=sparkctl_settings.runtime.get(
+        "reverse_proxy_url", SparkRuntimeParams.model_fields["reverse_proxy_url"].default
+    ),
+    show_default=True,
+    help=SparkRuntimeParams.model_fields["reverse_proxy_url"].description,
+)
+@click.option(
+    "--prometheus/--no-prometheus",
+    is_flag=True,
+    default=sparkctl_settings.runtime.get(
+        "enable_prometheus", SparkRuntimeParams.model_fields["enable_prometheus"].default
+    ),
+    show_default=True,
+    help=SparkRuntimeParams.model_fields["enable_prometheus"].description,
+)
+@click.option(
+    "--gpus/--no-gpus",
+    is_flag=True,
+    default=sparkctl_settings.runtime.get(
+        "enable_gpus", SparkRuntimeParams.model_fields["enable_gpus"].default
+    ),
+    show_default=True,
+    help=SparkRuntimeParams.model_fields["enable_gpus"].description,
+)
+@click.option(
+    "--gpus-per-node",
+    default=sparkctl_settings.runtime.get(
+        "gpus_per_node", SparkRuntimeParams.model_fields["gpus_per_node"].default
+    ),
+    show_default=True,
+    type=int,
+    help=SparkRuntimeParams.model_fields["gpus_per_node"].description,
+)
+@click.option(
+    "--rapids/--no-rapids",
+    is_flag=True,
+    default=sparkctl_settings.runtime.get(
+        "enable_rapids", SparkRuntimeParams.model_fields["enable_rapids"].default
+    ),
+    show_default=True,
+    help=SparkRuntimeParams.model_fields["enable_rapids"].description,
+)
+@click.option(
     "-l",
     "--spark-log-level",
     default=sparkctl_settings.runtime.get("spark_log_level"),
@@ -344,6 +426,14 @@ def configure(
     connect_server_port: int,
     history_server: bool,
     thrift_server: bool,
+    jupyter: bool,
+    jupyter_port: int,
+    reverse_proxy: bool,
+    reverse_proxy_url: str | None,
+    prometheus: bool,
+    gpus: bool,
+    gpus_per_node: int | None,
+    rapids: bool,
     spark_log_level: str | None,
     hive_metastore: bool,
     postgres_hive_metastore: bool,
@@ -381,6 +471,14 @@ def configure(
                 connect_server_port=connect_server_port,
                 start_history_server=history_server,
                 start_thrift_server=thrift_server,
+                start_jupyter=jupyter,
+                jupyter_port=jupyter_port,
+                enable_reverse_proxy=reverse_proxy,
+                reverse_proxy_url=reverse_proxy_url,
+                enable_prometheus=prometheus,
+                enable_gpus=gpus,
+                gpus_per_node=gpus_per_node,
+                enable_rapids=rapids,
                 spark_log_level=spark_log_level,
                 enable_hive_metastore=hive_metastore,
                 enable_postgres_hive_metastore=postgres_hive_metastore,

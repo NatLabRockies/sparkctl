@@ -8,4 +8,5 @@
     start_a_cluster
     run_jobs
     resource_monitoring
+    prometheus_metrics
 ```

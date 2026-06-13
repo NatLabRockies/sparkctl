@@ -77,6 +77,30 @@ class SlurmCompute(ComputeInterface):
 
         return int(num_cpus)
 
+    def get_worker_num_gpus(self) -> int:
+        # Slurm exposes the per-node GPU count in several variables depending on how the job
+        # requested GPUs. Check them in order of specificity, then fall back to the visible-device
+        # list. Return 0 when none indicate GPUs so that GPU support stays opt-in.
+        het = self.is_heterogeneous_slurm_job()
+        candidates = []
+        if het:
+            candidates.append(os.getenv("SLURM_GPUS_PER_NODE_HET_GROUP_1"))
+        candidates.extend(
+            (
+                os.getenv("SLURM_GPUS_ON_NODE"),
+                os.getenv("SLURM_GPUS_PER_NODE"),
+            )
+        )
+        for value in candidates:
+            num_gpus = _parse_slurm_gpu_count(value)
+            if num_gpus is not None:
+                return num_gpus
+
+        visible = os.getenv("CUDA_VISIBLE_DEVICES")
+        if visible:
+            return len([x for x in visible.split(",") if x.strip()])
+        return 0
+
     def is_heterogeneous_slurm_job(self) -> bool:
         return "SLURM_HET_SIZE" in os.environ
 
@@ -101,6 +125,20 @@ class SlurmCompute(ComputeInterface):
             if het_group_0 != 1:
                 msg = f"SLURM_JOBID_HET_GROUP_0 can only have one node: {het_group_0}"
                 raise ValueError(msg)
+
+
+def _parse_slurm_gpu_count(value: str | None) -> int | None:
+    """Parse a Slurm GPU count variable. Returns None when the value is unset or unparseable.
+
+    Slurm reports these in a few formats, e.g. "4", "gpu:4", or "gpu:a100:4".
+    """
+    if not value:
+        return None
+    # The count is the trailing integer, optionally preceded by "<type>:" fields.
+    match = re.search(r"(\d+)\s*$", value.split("(")[0])
+    if match is None:
+        return None
+    return int(match.group(1))
 
 
 def get_node_names(job_id: str) -> list[str]:

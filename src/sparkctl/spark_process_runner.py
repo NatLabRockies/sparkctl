@@ -63,6 +63,84 @@ class SparkProcessRunner:
         """Stop the Apache Thrift server."""
         return self._run_command(self._stop_thrift_server_cmd())
 
+    def start_jupyter_server(self) -> None:
+        """Start a JupyterLab server on the local node."""
+        jupyter = shutil.which("jupyter")
+        if jupyter is None:
+            msg = (
+                "jupyter is not installed in the current environment. Install it with "
+                "`pip install jupyterlab` (or `uv pip install jupyterlab`)."
+            )
+            raise ExecutionError(msg)
+
+        port = self._config.runtime.jupyter_port
+        log_file = self._get_jupyter_log_file()
+        pid_file = self._get_jupyter_pid_file()
+        env = self._get_env()
+        if self._config.runtime.start_connect_server:
+            # Pre-wire notebooks to the Connect server so SparkSession.builder.getOrCreate()
+            # connects to the running cluster without any extra configuration.
+            env["SPARK_REMOTE"] = f"sc://localhost:{self._config.runtime.connect_server_port}"
+        cmd = [
+            jupyter,
+            "lab",
+            "--no-browser",
+            f"--port={port}",
+            "--ip=0.0.0.0",
+            f"--notebook-dir={self._config.directories.base}",
+        ]
+        logger.info("Start JupyterLab server: {}", " ".join(cmd))
+        with open(log_file, "w", encoding="utf-8") as f_out:
+            proc = subprocess.Popen(
+                cmd,
+                stdin=subprocess.DEVNULL,
+                stdout=f_out,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,
+                env=env,
+            )
+        time.sleep(1)
+        ret = proc.poll()
+        if ret is not None:
+            msg = (
+                f"The JupyterLab server exited immediately with return code {ret}. See {log_file}."
+            )
+            raise ExecutionError(msg)
+        pid_file.write_text(f"{proc.pid}\n", encoding="utf-8")
+        logger.info(
+            "Started JupyterLab server with pid {} on port {}. The access URL (with token) is in "
+            "{}.",
+            proc.pid,
+            port,
+            log_file,
+        )
+
+    def stop_jupyter_server(self) -> int:
+        """Stop the JupyterLab server."""
+        pid_file = self._get_jupyter_pid_file()
+        if not pid_file.exists():
+            logger.error("Cannot stop JupyterLab server: {} does not exist", pid_file)
+            return 1
+        pid = int(pid_file.read_text(encoding="utf-8").strip())
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except ProcessLookupError:
+            logger.info("The JupyterLab server has already exited")
+            pid_file.unlink()
+            return 0
+        if self._wait_for_process_exit(pid, timeout_s=30):
+            logger.info("Stopped the JupyterLab server")
+            pid_file.unlink()
+            return 0
+        logger.error("The JupyterLab server process {} did not exit within the timeout", pid)
+        return 1
+
+    def _get_jupyter_pid_file(self) -> Path:
+        return self._config.directories.base / "jupyter.pid"
+
+    def _get_jupyter_log_file(self) -> Path:
+        return self._config.directories.base / "jupyter.log"
+
     def start_worker_process(self, memory_gb: int) -> None:
         """Start one Spark worker process."""
         tmp_script = self._make_start_worker_script(self._start_worker_cmd(), memory_gb)
