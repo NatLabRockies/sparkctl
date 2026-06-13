@@ -643,7 +643,11 @@ def stop(ctx: click.Context, directory: Path) -> None:
 @click.argument("directory", type=click.Path(path_type=Path))
 @click.pass_context
 def clean(ctx: click.Context, directory: Path) -> None:
-    """Delete all Spark runtime files in the directory."""
+    """Delete all Spark runtime files in the directory.
+
+    This also deletes the configured spark_scratch directory recursively, even when it is located
+    outside the base configuration directory. Point spark_scratch at a dedicated directory.
+    """
     setup_logging(
         filename="sparkctl.log",
         console_level=ctx.find_root().params["console_level"],

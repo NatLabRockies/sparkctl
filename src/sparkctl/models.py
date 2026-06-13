@@ -225,7 +225,8 @@ class RuntimeDirectories(SparkctlBaseModel):
     )
     spark_scratch: Path = Field(
         default=Path("spark_scratch"),
-        description="Directory to use for shuffle data.",
+        description="Directory to use for shuffle data. Use a dedicated directory: `sparkctl clean` "
+        "deletes it recursively, even when it is outside the base configuration directory.",
     )
     metastore_dir: Path = Field(
         default=Path(), description="Set a custom directory for the metastore and warehouse."
