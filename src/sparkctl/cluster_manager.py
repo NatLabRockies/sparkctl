@@ -236,8 +236,8 @@ class ClusterManager:
     def start(self, print_env_paths: bool = True) -> None:
         """Start the Spark cluster. The caller must have called :meth:`configure` beforehand.
 
-        The environment variables `SPARK_CONF_DIR` and `JAVA_HOME` are set to correct values for
-        the current process.
+        The environment variables `SPARK_HOME`, `SPARK_CONF_DIR`, and `JAVA_HOME` are set to correct
+        values for the current process.
 
         Examples
         --------
@@ -268,6 +268,7 @@ class ClusterManager:
         with open(status_file, "w", encoding="utf-8") as f_out:
             f_out.write(tracker.model_dump_json(indent=2))
 
+        os.environ["SPARK_HOME"] = str(self._config.binaries.spark_path)
         os.environ["SPARK_CONF_DIR"] = str(self._config.directories.get_spark_conf_dir())
         os.environ["JAVA_HOME"] = str(self._config.binaries.java_path)
 
@@ -299,8 +300,8 @@ class ClusterManager:
         """Configure and start the Spark cluster, yield a SparkSession in a context manager,
         stop the cluster after exit.
 
-        The environment variables `SPARK_CONF_DIR` and `JAVA_HOME` are set to correct values for
-        the current process while the context is active and cleared when complete.
+        The environment variables `SPARK_HOME`, `SPARK_CONF_DIR`, and `JAVA_HOME` are set to correct
+        values for the current process while the context is active and cleared when complete.
 
         Examples
         --------
@@ -322,6 +323,7 @@ class ClusterManager:
             self.stop()
             logger.info("Stopped Spark cluster processes and SparkSession")
             # Clear the environment variables set by start()
+            os.environ.pop("SPARK_HOME", None)
             os.environ.pop("SPARK_CONF_DIR", None)
             os.environ.pop("JAVA_HOME", None)
 
