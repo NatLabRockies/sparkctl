@@ -62,6 +62,27 @@ by Jupyter's token.
    ``ssh -J <hpc-login-host> -L 8889:localhost:8889 <node>``.
 ```
 
+## Working in the notebook
+
+The notebook server runs in the same environment as sparkctl, so its Python kernel already has
+`pyspark-client` available. With the Connect server enabled, every notebook connects to the cluster
+through `SPARK_REMOTE` — just call `SparkSession.builder.getOrCreate()` as shown above. See the
+[Spark Connect tutorial](../../tutorials/run_python_spark_jobs_spark_connect.md) for more on what
+the Connect client supports.
+
+Notebooks are served from the cluster base directory, so any notebooks you create are saved there
+and persist after the cluster stops.
+
+## Troubleshooting
+
+- **The browser cannot connect.** Confirm the SSH tunnel from the startup banner is running, and
+  that you opened the URL with its `?token=...` (copy it from the banner or `jupyter.log`). If you
+  set `--jupyter-ip 127.0.0.1`, the tunnel must terminate on the compute node itself.
+- **`Address already in use`.** Another process holds the port; choose a different one with
+  `--jupyter-port`.
+- **`SparkSession` cannot reach the cluster.** Make sure you configured with `--connect-server`;
+  without it `SPARK_REMOTE` is not set and the notebook will not auto-connect.
+
 ## Reducing log noise
 
 If `jupyter.log` is noisy, note that the most verbose tracebacks come from optional integrations,

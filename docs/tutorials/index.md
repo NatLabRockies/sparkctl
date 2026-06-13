@@ -21,6 +21,7 @@ These tutorials guide you through running Spark jobs on HPC clusters using spark
 
 - **"I want to control the cluster from Python code"** → [Python Library](run_python_spark_jobs_script.md)
 - **"I want to explore data interactively"** → [Interactive Development](run_python_spark_jobs_interactively.md)
+- **"I want to work in Jupyter notebooks"** → [Run a Jupyter notebook](../how_tos/applications/jupyter.md)
 - **"I use Ibis and want portable dataframe code"** → [Ibis](run_ibis_spark_jobs.md)
 - **"I want a minimal client installation"** → [Spark Connect CLI](run_python_spark_jobs_spark_connect.md)
 - **"I want to submit batch jobs"** → [spark-submit / pyspark](run_spark_jobs.md)
