@@ -47,9 +47,10 @@ you can tail the `stderr` files to see what is happening:
 $ tail -f spark_scratch/workers/*/*/stderr
 ```
 
-If you have many executors, you may want to tail only the most recent ones. Identify them with
+If you have many executors, you may want to tail only the most recent ones. List the `stderr`
+files newest-first with (works on both Linux and macOS):
 ```console
-$ find spark_scratch -type f -name stderr -exec stat -c '%Y %y %n' {} + 2>/dev/null | sort -n
+$ ls -lt spark_scratch/workers/*/*/stderr | head
 ```
 
 ## Spark shuffle partitions

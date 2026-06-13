@@ -46,7 +46,14 @@ def init_hive(config: SparkConfig):
     if hive_home.exists():
         shutil.rmtree(hive_home)
     with tarfile.open(config.binaries.hive_tarball, "r:gz") as tar:
-        tar.extractall(path=config.directories.base, filter="data")
+        # The extraction `filter` argument (PEP 706) is present on 3.12+ and on later 3.11 patch
+        # releases (3.11.4+), but not on the earliest 3.11 versions this project supports.
+        # `tarfile.data_filter` exists exactly when the argument does, so use the safe "data"
+        # filter when available; the tarball is a trusted Apache release otherwise.
+        if hasattr(tarfile, "data_filter"):
+            tar.extractall(path=config.directories.base, filter="data")
+        else:
+            tar.extractall(path=config.directories.base)
     hive_conf = hive_home / "conf"
 
     shutil.copyfile(
