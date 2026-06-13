@@ -519,9 +519,20 @@ spark.worker.cleanup.enabled = true
         # Leave one CPU for OS and management software.
         worker_num_cpus -= 1
 
-        # Use at least one executor per node even when the node has fewer CPUs than
-        # executor_cores (e.g. a small CI runner or laptop), which would otherwise divide by zero.
-        min_executors_per_node = max(1, worker_num_cpus // self._config.runtime.executor_cores)
+        executor_cores = self._config.runtime.executor_cores
+        if worker_num_cpus < executor_cores:
+            msg = (
+                f"Each worker node has {self._intf.get_worker_num_cpus()} CPU(s) "
+                f"({worker_num_cpus} after reserving one for the OS), which is fewer than "
+                f"executor_cores ({executor_cores}). Spark cannot launch an executor that does "
+                "not fit on a single worker, so jobs would hang indefinitely with 'Initial job "
+                "has not accepted any resources'. Request more CPUs in the allocation (e.g. the "
+                "Slurm --cpus-per-task option) or lower runtime.executor_cores."
+            )
+            raise InvalidConfiguration(msg)
+
+        # The guard above ensures worker_num_cpus >= executor_cores, so this is always >= 1.
+        min_executors_per_node = worker_num_cpus // executor_cores
         if self._config.runtime.executor_memory_gb is None:
             executor_memory_gb = worker_memory_gb // min_executors_per_node
         else:

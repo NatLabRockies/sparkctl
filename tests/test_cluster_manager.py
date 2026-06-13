@@ -122,6 +122,20 @@ def test_configure_gpus_with_override(setup_local_env: tuple[SparkConfig, Path])
     assert discovery_script.stat().st_mode & 0o100  # owner-executable
 
 
+def test_configure_executor_cores_exceed_worker_cpus_fails(
+    setup_local_env: tuple[SparkConfig, Path],
+):
+    config, tmp_path = setup_local_env
+    config.directories.spark_scratch = tmp_path / "spark_scratch"
+    # FakeCompute reports 12 CPUs (11 usable after reserving one for the OS). An executor that
+    # needs more cores than that can never be scheduled, so configure must fail fast rather than
+    # emit a config that hangs with "Initial job has not accepted any resources".
+    config.runtime.executor_cores = 16
+    mgr = ClusterManager.from_config(config)
+    with pytest.raises(InvalidConfiguration, match="executor_cores"):
+        mgr.configure()
+
+
 def test_configure_rapids_without_jar_fails(setup_local_env: tuple[SparkConfig, Path]):
     config, tmp_path = setup_local_env
     config.directories.spark_scratch = tmp_path / "spark_scratch"
