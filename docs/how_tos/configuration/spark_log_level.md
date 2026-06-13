@@ -39,7 +39,7 @@ The `--spark-log-level` option accepts these values:
 
 With `INFO` (default), you'll see messages like:
 ```
-INFO SparkContext: Running Spark version 4.1.2
+INFO SparkContext: Running Spark version 4.1.1
 INFO ResourceUtils: Resources for spark.driver: ...
 INFO SparkContext: Submitted application: My Job
 INFO Executor: Starting executor ID driver on host ...

@@ -70,7 +70,7 @@ export the relevant variables yourself, for example through `spark-env.sh` in th
 
 If you are running pyspark/spark-submit after installing via `pip install sparkctl[pyspark]`,
 your version of pyspark must match the cluster version exactly. Client version 4.1.3 is
-incompatible with cluster version 4.1.2.
+incompatible with cluster version 4.1.1.
 
 ### Why can't my workers connect to the master?
 

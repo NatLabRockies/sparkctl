@@ -1619,16 +1619,16 @@ wheels = [
 
 [[package]]
 name = "pyspark"
-version = "4.1.2"
+version = "4.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "py4j" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5e/71/4dd20c69332a2a4bf7ece8a655c9da98e4bd9b6bcea235349c1a00399d57/pyspark-4.1.2.tar.gz", hash = "sha256:fa5d6159f700d0990a07f4f62df1b7449401dccee9cd7d5d6df8957530841602", size = 455428043, upload-time = "2026-05-21T14:49:21.785Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/19/bf/58ee13add151469c25825b7125bbf62c3bdcec05eec4d458fcb5c5516066/pyspark-4.1.1.tar.gz", hash = "sha256:77f78984aa84fbe865c717dd37b49913b4e5c97d76ef6824f932f1aefa6621ec", size = 455359625, upload-time = "2026-01-09T09:38:38.28Z" }
 
 [[package]]
 name = "pyspark-client"
-version = "4.1.2"
+version = "4.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "googleapis-common-protos" },
@@ -1640,7 +1640,7 @@ dependencies = [
     { name = "pyyaml" },
     { name = "zstandard" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f4/47/57c1234c69fb87234b8d080c64775eb5a088cfbb9fe419b190cb7d7ca40e/pyspark_client-4.1.2.tar.gz", hash = "sha256:4e5ac863064c3bd6c288da7e3932c72b491cd90e294e5e91aec37e1fa1c870f5", size = 1601811, upload-time = "2026-05-21T14:49:42.352Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/41/b0/fde39357666529049f2f71235d7126c7b2d5b4c5e20c072dccf845e9a09d/pyspark_client-4.1.1.tar.gz", hash = "sha256:23bd428d1f96c7196ae8ba29facca7eb56f66b3c380294385101ec8f1872a44a", size = 1600762, upload-time = "2026-01-09T09:38:50.679Z" }
 
 [[package]]
 name = "pytest"
@@ -2156,8 +2156,8 @@ requires-dist = [
     { name = "prek", marker = "extra == 'dev'", specifier = ">=0.2,<1" },
     { name = "psutil" },
     { name = "pydantic", specifier = ">=2.7,<3" },
-    { name = "pyspark", marker = "extra == 'pyspark'", specifier = "==4.1.2" },
-    { name = "pyspark-client", specifier = "==4.1.2" },
+    { name = "pyspark", marker = "extra == 'pyspark'", specifier = "==4.1.1" },
+    { name = "pyspark-client", specifier = "==4.1.1" },
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "pytest-cov", marker = "extra == 'dev'" },
     { name = "requests", marker = "extra == 'dev'" },

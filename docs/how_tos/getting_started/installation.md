@@ -114,7 +114,7 @@
 
    ```bash
    $ sparkctl default-config \
-       /datasets/images/apache_spark/spark-4.1.2-bin-hadoop3 \
+       /datasets/images/apache_spark/spark-4.1.1-bin-hadoop3 \
        /datasets/images/apache_spark/jdk-21.0.7 \
        --compute-environment slurm
    ```
