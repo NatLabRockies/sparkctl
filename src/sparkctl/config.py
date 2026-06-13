@@ -1,7 +1,8 @@
 import os
 from pathlib import Path
+from typing import Any
 
-from dynaconf import Dynaconf, Validator  # type: ignore
+from dynaconf import Dynaconf, Validator
 from rich import print
 
 from sparkctl.exceptions import InvalidConfiguration
@@ -39,7 +40,7 @@ def _build_settings_files() -> list[Path]:
     return files
 
 
-RUNTIME = {
+RUNTIME: dict[str, Any] = {
     "executor_cores": SparkRuntimeParams.model_fields["executor_cores"].default,
     "executor_memory_gb": SparkRuntimeParams.model_fields["executor_memory_gb"].default,
     "driver_memory_gb": SparkRuntimeParams.model_fields["driver_memory_gb"].default,
@@ -63,7 +64,7 @@ RUNTIME = {
     "postgres_password": None,
     "spark_defaults_template_file": None,
 }
-APP = {
+APP: dict[str, Any] = {
     "console_level": AppParams.model_fields["console_level"].default,
     "file_level": AppParams.model_fields["file_level"].default,
     "reraise_exceptions": AppParams.model_fields["reraise_exceptions"].default,
