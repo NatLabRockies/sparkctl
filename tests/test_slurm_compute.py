@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from sparkctl.exceptions import InvalidConfiguration
 from sparkctl.models import BinaryLocations, ComputeEnvironment, ComputeParams, SparkConfig
 from sparkctl.slurm_compute import SlurmCompute
 
@@ -59,6 +60,48 @@ def test_slurm_get_worker_num_cpus_het(slurm_compute):
                 os.environ.pop(key)
             else:
                 os.environ[key] = orig_val
+
+
+def test_check_gpu_allocation_uneven_raises(slurm_compute, monkeypatch):
+    # 2 worker nodes, this node has 3 GPUs, but the job total is 4 -> 3 * 2 != 4, so the GPUs were
+    # split unevenly (e.g. salloc --gpus=4 -N2 giving 3 + 1).
+    monkeypatch.setattr(slurm_compute, "get_num_workers", lambda: 2)
+    monkeypatch.setattr(slurm_compute, "get_worker_num_gpus", lambda: 3)
+    monkeypatch.delenv("SLURM_HET_SIZE", raising=False)
+    monkeypatch.delenv("SLURM_GPUS_PER_NODE", raising=False)
+    monkeypatch.setenv("SLURM_GPUS", "4")
+    with pytest.raises(InvalidConfiguration, match="evenly distributed"):
+        slurm_compute.check_gpu_allocation()
+
+
+def test_check_gpu_allocation_even_ok(slurm_compute, monkeypatch):
+    # 2 worker nodes, 4 GPUs each, job total 8 -> evenly distributed.
+    monkeypatch.setattr(slurm_compute, "get_num_workers", lambda: 2)
+    monkeypatch.setattr(slurm_compute, "get_worker_num_gpus", lambda: 4)
+    monkeypatch.delenv("SLURM_HET_SIZE", raising=False)
+    monkeypatch.delenv("SLURM_GPUS_PER_NODE", raising=False)
+    monkeypatch.setenv("SLURM_GPUS", "8")
+    slurm_compute.check_gpu_allocation()
+
+
+def test_check_gpu_allocation_per_node_request_skips_check(slurm_compute, monkeypatch):
+    # --gpus-per-node guarantees a uniform count, so the arithmetic check is skipped even when
+    # SLURM_GPUS would not divide evenly.
+    monkeypatch.setattr(slurm_compute, "get_num_workers", lambda: 2)
+    monkeypatch.setattr(slurm_compute, "get_worker_num_gpus", lambda: 4)
+    monkeypatch.delenv("SLURM_HET_SIZE", raising=False)
+    monkeypatch.setenv("SLURM_GPUS_PER_NODE", "4")
+    monkeypatch.setenv("SLURM_GPUS", "4")
+    slurm_compute.check_gpu_allocation()
+
+
+def test_check_gpu_allocation_single_node_ok(slurm_compute, monkeypatch):
+    # A single worker node cannot be uneven, so no check applies.
+    monkeypatch.setattr(slurm_compute, "get_num_workers", lambda: 1)
+    monkeypatch.setattr(slurm_compute, "get_worker_num_gpus", lambda: 3)
+    monkeypatch.delenv("SLURM_GPUS_PER_NODE", raising=False)
+    monkeypatch.setenv("SLURM_GPUS", "4")
+    slurm_compute.check_gpu_allocation()
 
 
 # TODO: get_node_names

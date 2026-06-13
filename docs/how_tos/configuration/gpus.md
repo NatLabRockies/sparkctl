@@ -26,6 +26,14 @@ This generates a GPU discovery script in the cluster's `conf` directory and writ
 By default each executor is assigned one GPU and tasks share that GPU
 (`spark.task.resource.gpu.amount = executor_gpu_amount / executor_cores`).
 
+```{eval-rst}
+.. note:: On a multi-node Slurm job every worker node must have the **same** number of GPUs, because
+   sparkctl writes a single ``spark.worker.resource.gpu.amount`` for all workers. Request GPUs
+   per node (``--gpus-per-node=4``) rather than as a job-wide total (``--gpus=4``), which Slurm can
+   split unevenly across nodes. ``sparkctl configure`` fails fast if it detects a non-uniform
+   distribution.
+```
+
 ### Executor sizing
 
 When GPUs are enabled and you do not set `executor_cores`, sparkctl follows NVIDIA's recommended

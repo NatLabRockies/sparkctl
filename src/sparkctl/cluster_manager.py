@@ -735,6 +735,10 @@ applications.sink.prometheusServlet.path=/metrics/applications/prometheus
             )
             raise InvalidConfiguration(msg)
 
+        # Fail fast if the allocation cannot put num_gpus on every worker (e.g. an uneven Slurm
+        # --gpus split), which would otherwise leave a worker unable to start.
+        self._intf.check_gpu_allocation()
+
         discovery_script = self._write_gpu_discovery_script()
         executor_gpu_amount = rt_params.executor_gpu_amount
         if executor_gpu_amount > num_gpus:

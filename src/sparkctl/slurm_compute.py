@@ -5,6 +5,7 @@ from pathlib import Path
 from socket import gethostname
 
 from sparkctl.compute_interface import ComputeInterface
+from sparkctl.exceptions import InvalidConfiguration
 from sparkctl.models import SparkConfig
 
 
@@ -100,6 +101,43 @@ class SlurmCompute(ComputeInterface):
         if visible:
             return len([x for x in visible.split(",") if x.strip()])
         return 0
+
+    def check_gpu_allocation(self) -> None:
+        # sparkctl writes a single spark.worker.resource.gpu.amount for every worker, equal to the
+        # GPU count detected on the node where `configure` runs. If the GPUs were requested as a
+        # job-wide total (Slurm --gpus) rather than per node (--gpus-per-node), Slurm can split
+        # them unevenly across nodes, leaving a worker with fewer GPUs than declared. That worker
+        # then fails to start and jobs hang with "Initial job has not accepted any resources".
+        # Fail fast when we can detect a non-uniform distribution.
+        num_workers = self.get_num_workers()
+        if num_workers <= 1:
+            return
+        num_gpus_per_node = self.get_worker_num_gpus()
+        if num_gpus_per_node <= 0:
+            return
+
+        het = self.is_heterogeneous_slurm_job()
+        # A per-node request (--gpus-per-node) guarantees the same count on every node.
+        per_node_var = "SLURM_GPUS_PER_NODE_HET_GROUP_1" if het else "SLURM_GPUS_PER_NODE"
+        if os.getenv(per_node_var) is not None:
+            return
+        if het:
+            # SLURM_GPUS would include the driver group's GPUs, so the arithmetic below is not
+            # reliable. Heterogeneous jobs normally set the per-node variable handled above.
+            return
+
+        total_gpus = _parse_slurm_gpu_count(os.getenv("SLURM_GPUS"))
+        if total_gpus is not None and total_gpus != num_gpus_per_node * num_workers:
+            msg = (
+                f"GPUs are not evenly distributed across the {num_workers} worker nodes: this node "
+                f"has {num_gpus_per_node} GPU(s) but the job was allocated {total_gpus} GPU(s) "
+                f"total ({num_gpus_per_node} x {num_workers} != {total_gpus}). sparkctl applies one "
+                "spark.worker.resource.gpu.amount to every worker, so any node with fewer GPUs will "
+                "fail to start and the job will hang with 'Initial job has not accepted any "
+                "resources'. Request a uniform per-node count with the Slurm --gpus-per-node option "
+                "(e.g. --gpus-per-node=4) instead of --gpus."
+            )
+            raise InvalidConfiguration(msg)
 
     def is_heterogeneous_slurm_job(self) -> bool:
         return "SLURM_HET_SIZE" in os.environ

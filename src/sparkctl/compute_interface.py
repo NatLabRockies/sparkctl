@@ -55,3 +55,10 @@ class ComputeInterface(abc.ABC):
     @abc.abstractmethod
     def run_checks(self) -> None:
         """Run checks on Slurm environment variables."""
+
+    def check_gpu_allocation(self) -> None:
+        """Validate that GPU scheduling can succeed on every worker node.
+
+        The default implementation performs no checks. Environments where worker nodes can end up
+        with differing GPU counts (e.g. Slurm) override this to fail fast.
+        """
