@@ -42,7 +42,7 @@ class BinaryLocations(SparkctlBaseModel):
     rapids_jar_file: Path | None = Field(
         default=None,
         description="Path to the NVIDIA RAPIDS Accelerator for Apache Spark jar file. Only "
-        "required to enable RAPIDS GPU acceleration (experimental).",
+        "required to enable RAPIDS GPU acceleration.",
     )
 
     @field_validator(
@@ -150,26 +150,26 @@ class SparkRuntimeParams(SparkctlBaseModel):
     )
     enable_gpus: bool = Field(
         default=False,
-        description="EXPERIMENTAL (untested): Enable GPU-aware scheduling. Spark workers advertise "
+        description="Enable GPU-aware scheduling. Spark workers advertise "
         "GPUs and executors/tasks request them. Requires GPUs on the worker nodes.",
     )
     gpus_per_node: int | None = Field(
         default=None,
-        description="EXPERIMENTAL (untested): Number of GPUs available on each worker node. "
+        description="Number of GPUs available on each worker node. "
         "Auto-detected from the compute environment by default.",
     )
     executor_gpu_amount: int = Field(
         default=1,
-        description="EXPERIMENTAL (untested): Number of GPUs assigned to each executor.",
+        description="Number of GPUs assigned to each executor.",
     )
     task_gpu_amount: float | None = Field(
         default=None,
-        description="EXPERIMENTAL (untested): GPUs assigned to each task. Defaults to "
+        description="GPUs assigned to each task. Defaults to "
         "executor_gpu_amount / executor_cores so that concurrent tasks share an executor's GPUs.",
     )
     enable_rapids: bool = Field(
         default=False,
-        description="EXPERIMENTAL (untested): Enable the NVIDIA RAPIDS Accelerator for Apache "
+        description="Enable the NVIDIA RAPIDS Accelerator for Apache "
         "Spark to offload SQL/DataFrame operations to GPUs. Implies enable_gpus and requires "
         "binaries.rapids_jar_file.",
     )

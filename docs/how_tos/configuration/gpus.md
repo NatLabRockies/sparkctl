@@ -1,11 +1,4 @@
-# How to enable GPU acceleration (experimental)
-
-```{eval-rst}
-.. warning:: GPU support is **experimental and untested**. The options below configure Spark's
-   GPU-aware scheduling and, optionally, the NVIDIA RAPIDS Accelerator, but they have not been
-   validated on a real GPU cluster. Treat the generated settings as a starting point and expect to
-   tune them for your site.
-```
+# How to enable GPU acceleration
 
 ## GPU-aware scheduling
 
@@ -184,6 +177,5 @@ GPUs usually do **not** help, and can be slower or more expensive per result, wh
 .. tip:: Before committing a workload to GPUs, run NVIDIA's
    `Spark RAPIDS qualification tool <https://docs.nvidia.com/spark-rapids/user-guide/latest/qualification/quickstart.html>`_
    against the CPU run's event logs. It estimates the speedup (and flags unsupported operators)
-   from a real run, which is more reliable than guessing — especially given that GPU support in
-   sparkctl is still experimental and unvalidated.
+   from a real run, which is more reliable than guessing.
 ```

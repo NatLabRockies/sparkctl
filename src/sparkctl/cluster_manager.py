@@ -714,9 +714,7 @@ spark.executor.resource.gpu.discoveryScript {discovery_script}
 spark.task.resource.gpu.amount {task_gpu_amount}
 """
             )
-        logger.warning(
-            "Enabled EXPERIMENTAL (untested) GPU scheduling with {} GPU(s) per node.", num_gpus
-        )
+        logger.warning("Enabled GPU scheduling with {} GPU(s) per node.", num_gpus)
 
     def _write_gpu_discovery_script(self) -> Path:
         script = self._config.directories.get_gpu_discovery_script_file()
@@ -772,9 +770,7 @@ spark.rapids.sql.enabled true
 spark.rapids.sql.concurrentGpuTasks 1
 """
             )
-        logger.warning(
-            "Enabled EXPERIMENTAL (untested) RAPIDS GPU acceleration using {}", rapids_jar
-        )
+        logger.warning("Enabled RAPIDS GPU acceleration using {}", rapids_jar)
 
     def _get_runtime_spark_driver_memory_gb(self) -> int:
         # Note that spark-defaults.conf takes precedence over our config.json.
