@@ -389,3 +389,7 @@ class StatusTracker(SparkctlBaseModel):
     started_thrift_server: bool = False
     started_jupyter: bool = False
     started_postgres: bool = False
+
+    def is_any_running(self) -> bool:
+        """Return True if any tracked process is recorded as running."""
+        return any(self.model_dump().values())

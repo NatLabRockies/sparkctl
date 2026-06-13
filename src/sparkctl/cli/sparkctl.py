@@ -641,9 +641,20 @@ def stop(ctx: click.Context, directory: Path) -> None:
 
 @click.command()
 @click.argument("directory", type=click.Path(path_type=Path))
+@click.option(
+    "--force/--no-force",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Clean even if a cluster appears to be running. By default clean refuses in that case "
+    "because it would delete the files needed to stop the cluster.",
+)
 @click.pass_context
-def clean(ctx: click.Context, directory: Path) -> None:
+def clean(ctx: click.Context, directory: Path, force: bool) -> None:
     """Delete all Spark runtime files in the directory.
+
+    Stop the cluster before cleaning. By default this refuses to run while a cluster appears to be
+    running, since it deletes the state needed to stop it; pass --force to override.
 
     This also deletes the configured spark_scratch directory recursively, even when it is located
     outside the base configuration directory. Point spark_scratch at a dedicated directory.
@@ -654,8 +665,9 @@ def clean(ctx: click.Context, directory: Path) -> None:
         file_level=ctx.find_root().params["file_level"],
         mode="a",
     )
-    mgr = ClusterManager.load(directory)
-    mgr.clean()
+    res = handle_sparkctl_exception(ctx, lambda: ClusterManager.load(directory).clean(force=force))
+    if res[1] != 0:
+        ctx.exit(res[1])
 
 
 def handle_sparkctl_exception(ctx: click.Context, func, *args, **kwargs) -> Any:

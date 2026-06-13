@@ -10,6 +10,7 @@ from sparkctl import (
     SparkConfig,
 )
 from sparkctl.exceptions import InvalidConfiguration
+from sparkctl.models import StatusTracker
 
 
 def test_cluster_manager_workers(setup_local_env: tuple[SparkConfig, Path]):
@@ -21,6 +22,32 @@ def test_cluster_manager_workers(setup_local_env: tuple[SparkConfig, Path]):
     new_workers = ["worker1", "worker2"]
     mgr.set_workers(new_workers)
     assert mgr.get_workers() == new_workers
+
+
+def test_clean_refuses_while_running(setup_local_env: tuple[SparkConfig, Path]):
+    config, tmp_path = setup_local_env
+    config.directories.base = tmp_path
+    config.directories.spark_scratch = tmp_path / "spark_scratch"
+    scratch = config.directories.spark_scratch
+    scratch.mkdir()
+    mgr = ClusterManager(config, status=StatusTracker(started_master=True))
+    with pytest.raises(InvalidConfiguration):
+        mgr.clean()
+    # The guard must not delete anything before raising.
+    assert scratch.exists()
+    # --force overrides the guard.
+    mgr.clean(force=True)
+    assert not scratch.exists()
+
+
+def test_clean_when_stopped(setup_local_env: tuple[SparkConfig, Path]):
+    config, tmp_path = setup_local_env
+    config.directories.base = tmp_path
+    config.directories.spark_scratch = tmp_path / "spark_scratch"
+    config.directories.spark_scratch.mkdir()
+    mgr = ClusterManager(config, status=StatusTracker())
+    mgr.clean()
+    assert not config.directories.spark_scratch.exists()
 
 
 def test_configure_reverse_proxy_and_prometheus(setup_local_env: tuple[SparkConfig, Path]):
