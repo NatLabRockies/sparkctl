@@ -259,7 +259,10 @@ class ClusterManager:
 
         if print_env_paths:
             _print_env_paths_msg(
-                self._config.directories.get_spark_conf_dir(), self._config.binaries.java_path
+                self._config.directories.get_spark_conf_dir(),
+                self._config.binaries.java_path,
+                self._config.binaries.spark_path,
+                url,
             )
         status_file = self._config.directories.base / self.STATUS_FILENAME
         with open(status_file, "w", encoding="utf-8") as f_out:
@@ -895,15 +898,21 @@ spark.rapids.sql.concurrentGpuTasks 1
         return [x for x in workers_file.read_text(encoding="utf-8").splitlines() if x]
 
 
-def _print_env_paths_msg(conf_dir: Path, java_dir: Path) -> None:
+def _print_env_paths_msg(conf_dir: Path, java_dir: Path, spark_dir: Path, url: str) -> None:
     print(
         f"""
 ###############################################################################
 
 Set these environment variables to use the Spark configuration:
 
+export SPARK_HOME={spark_dir}
 export SPARK_CONF_DIR={conf_dir}
 export JAVA_HOME={java_dir}
+
+To connect interactively, add Spark to your PATH and point a client at the master, e.g.:
+
+export PATH="$SPARK_HOME/bin:$PATH"
+pyspark --master {url}
 
 ###############################################################################
 """,
