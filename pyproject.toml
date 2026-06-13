@@ -39,6 +39,11 @@ dependencies = [
 pyspark = [
     "pyspark == 4.1.2",
 ]
+# Optional notebook frontend for `sparkctl configure --jupyter`. Installs the classic notebook
+# (the default frontend); install jupyterlab separately to use `--jupyter-command lab`.
+jupyter = [
+    "notebook",
+]
 dev = [
     "furo",
     "myst_parser",

@@ -9,10 +9,11 @@ single-user cluster. Use `--jupyter-command lab` if you prefer JupyterLab.
 
 ## Prerequisites
 
-Install Jupyter in the same environment as sparkctl:
+Install Jupyter in the same environment as sparkctl. The `jupyter` extra pulls in the classic
+notebook frontend:
 
 ```console
-$ pip install notebook       # or: uv pip install notebook
+$ pip install "sparkctl[jupyter]"    # or: uv pip install "sparkctl[jupyter]"
 ```
 
 If you want JupyterLab instead, install `jupyterlab` and pass `--jupyter-command lab`.
