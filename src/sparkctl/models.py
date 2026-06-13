@@ -111,6 +111,12 @@ class SparkRuntimeParams(SparkctlBaseModel):
         description="Jupyter frontend to launch, i.e. the `jupyter <command>` subcommand. "
         "Defaults to the classic 'notebook'; use 'lab' for JupyterLab.",
     )
+    jupyter_ip: str = Field(
+        default="127.0.0.1",
+        description="IP address the Jupyter server binds to. Defaults to localhost, which is "
+        "secure and works with an SSH tunnel to the master node. Set to 0.0.0.0 to listen on all "
+        "interfaces (only if you understand the exposure).",
+    )
     jupyter_port: int = Field(
         default=8889,
         description="Port on which the Jupyter server listens.",

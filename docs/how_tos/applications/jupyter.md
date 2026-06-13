@@ -45,14 +45,24 @@ directory:
 $ grep -m1 'http' jupyter.log
 ```
 
-Jupyter listens on port 8889 by default. Change it with `--jupyter-port`, and forward it to your
-laptop over SSH (replacing `master-node` with the node running the server):
+Jupyter listens on `127.0.0.1:8889` by default. Binding to localhost keeps the server off the
+cluster network; reach it with an SSH tunnel. From your laptop, forward the port to the master node
+(use `-J <hpc-login-host>` to hop through the login node, and replace `master-node` with the node
+running the server):
 
 ```console
-$ ssh -L 8889:master-node:8889 <hpc-login-host>
+$ ssh -J <hpc-login-host> -L 8889:localhost:8889 master-node
 ```
 
-Then open the URL from `jupyter.log`, replacing the host with `localhost`.
+Then open the URL from `jupyter.log`, replacing the host with `localhost`. Change the port with
+`--jupyter-port`.
+
+```{eval-rst}
+.. note:: If you cannot reach the master node directly, ``--jupyter-ip 0.0.0.0`` makes Jupyter
+   listen on all interfaces so you can tunnel through the login node to the master's hostname. This
+   exposes the server to the cluster network (it is still protected by Jupyter's access token), so
+   prefer the localhost default when possible.
+```
 
 ## Stopping
 

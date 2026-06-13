@@ -88,7 +88,7 @@ class SparkProcessRunner:
             command,
             "--no-browser",
             f"--port={port}",
-            "--ip=0.0.0.0",
+            f"--ip={self._config.runtime.jupyter_ip}",
             f"--notebook-dir={self._config.directories.base}",
         ]
         logger.info("Start Jupyter server: {}", " ".join(cmd))
@@ -202,7 +202,10 @@ class SparkProcessRunner:
             return subprocess.run(["ssh", worker, script]).returncode
 
         failures: dict[str, int] = {}
-        with ThreadPoolExecutor(max_workers=max(1, len(workers))) as executor:
+        # Cap concurrency so a large allocation does not spawn thousands of ssh threads at once;
+        # the bounded pool keeps most of the speedup without exhausting local resources.
+        max_workers = min(32, max(1, len(workers)))
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = {executor.submit(run_one, worker): worker for worker in workers}
             for future in as_completed(futures):
                 worker = futures[future]

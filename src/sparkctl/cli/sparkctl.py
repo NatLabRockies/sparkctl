@@ -298,6 +298,14 @@ $ sparkctl configure --local-storage --thrift-server\n
     help=SparkRuntimeParams.model_fields["jupyter_command"].description,
 )
 @click.option(
+    "--jupyter-ip",
+    default=sparkctl_settings.runtime.get(
+        "jupyter_ip", SparkRuntimeParams.model_fields["jupyter_ip"].default
+    ),
+    show_default=True,
+    help=SparkRuntimeParams.model_fields["jupyter_ip"].description,
+)
+@click.option(
     "--jupyter-port",
     default=sparkctl_settings.runtime.get(
         "jupyter_port", SparkRuntimeParams.model_fields["jupyter_port"].default
@@ -454,6 +462,7 @@ def configure(
     thrift_server: bool,
     jupyter: bool,
     jupyter_command: str,
+    jupyter_ip: str,
     jupyter_port: int,
     reverse_proxy: bool,
     reverse_proxy_url: str | None,
@@ -502,6 +511,7 @@ def configure(
                 start_thrift_server=thrift_server,
                 start_jupyter=jupyter,
                 jupyter_command=jupyter_command,
+                jupyter_ip=jupyter_ip,
                 jupyter_port=jupyter_port,
                 enable_reverse_proxy=reverse_proxy,
                 reverse_proxy_url=reverse_proxy_url,
