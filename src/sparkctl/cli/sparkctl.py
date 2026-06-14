@@ -10,6 +10,7 @@ from loguru import logger
 from sparkctl.config import (
     DEFAULT_SETTINGS_FILENAME,
     RUNTIME,
+    SETTINGS_FILE_ENV_VAR,
     get_binaries,
     sparkctl_settings,
 )
@@ -39,7 +40,7 @@ from sparkctl.models import (
     "--file-level",
     default=sparkctl_settings.app.file_level,
     show_default=True,
-    help="Console log level",
+    help="File log level",
 )
 @click.option(
     "-r",
@@ -58,23 +59,23 @@ _default_config_epilog = """
 \b
 Examples:\n
 $ sparkctl default-config \\ \n
-    /datasets/images/apache-spark/spark-4.1.2-bin-hadoop3 \\ \n
+    /datasets/images/apache-spark/spark-4.1.1-bin-hadoop3 \\ \n
     /datasets/images/apache-spark/jdk-21.0.7 \\ \n
     -e slurm \\ \n
-$ sparkctl default-config ~/apache-spark/spark-4.1.2-bin-hadoop3 ~/jdk-21.0.8 -e native\n
+$ sparkctl default-config ~/apache-spark/spark-4.1.1-bin-hadoop3 ~/jdk-21.0.8 -e native\n
 """
 
 
 @click.command(epilog=_default_config_epilog)
-@click.argument("spark_path", type=click.Path(exists=True), callback=lambda *x: Path(x[2]))
-@click.argument("java_path", type=click.Path(exists=True), callback=lambda *x: Path(x[2]))
+@click.argument("spark_path", type=click.Path(exists=True, path_type=Path))
+@click.argument("java_path", type=click.Path(exists=True, path_type=Path))
 @click.option(
     "-d",
     "--directory",
     default=Path.home(),
     show_default=True,
     help="Directory in which to create the sparkctl config file.",
-    callback=lambda *x: Path(x[2]),
+    type=click.Path(path_type=Path),
 )
 @click.option(
     "-e",
@@ -89,19 +90,25 @@ $ sparkctl default-config ~/apache-spark/spark-4.1.2-bin-hadoop3 ~/jdk-21.0.8 -e
     "-H",
     "--hadoop-path",
     help="Directory containing Hadoop binaries.",
-    callback=lambda *x: None if x[2] is None else Path(x[2]),
+    type=click.Path(path_type=Path),
 )
 @click.option(
     "-h",
     "--hive-tarball",
     help="File containing Hive binaries.",
-    callback=lambda *x: None if x[2] is None else Path(x[2]),
+    type=click.Path(path_type=Path),
 )
 @click.option(
     "-p",
     "--postgresql-jar-file",
     help="Path to PostgreSQL jar file.",
-    callback=lambda *x: None if x[2] is None else Path(x[2]),
+    type=click.Path(path_type=Path),
+)
+@click.option(
+    "-R",
+    "--rapids-jar-file",
+    help=BinaryLocations.model_fields["rapids_jar_file"].description,
+    type=click.Path(path_type=Path),
 )
 def default_config(
     spark_path: Path,
@@ -111,6 +118,7 @@ def default_config(
     hadoop_path: Path | None,
     hive_tarball: Path | None,
     postgresql_jar_file: Path | None,
+    rapids_jar_file: Path | None,
 ):
     """Create a sparkctl config file that defines paths to Spark binaries.
     This is a one-time requirement when installing sparkctl in a new environment."""
@@ -121,6 +129,8 @@ def default_config(
         config.binaries.hive_tarball = hive_tarball
     if postgresql_jar_file is not None:
         config.binaries.postgresql_jar_file = postgresql_jar_file
+    if rapids_jar_file is not None:
+        config.binaries.rapids_jar_file = rapids_jar_file
     data = config.model_dump(mode="json", exclude={"directories"})
     # Don't hard-code the password globally.
     data["runtime"].pop("postgres_password")
@@ -128,6 +138,16 @@ def default_config(
     with open(filename, "w", encoding="utf-8") as f_out:
         toml.dump(data, f_out)
     print(f"Wrote sparkctl settings to {filename}")
+
+    # sparkctl only auto-discovers settings files in the home directory and the current working
+    # directory. A file written anywhere else must be pointed to explicitly, otherwise later
+    # commands silently fall back to defaults.
+    resolved = filename.resolve().parent
+    if resolved not in (Path.home().resolve(), Path.cwd().resolve()):
+        print(
+            f"\nNote: this location is not auto-discovered. Set {SETTINGS_FILE_ENV_VAR}={filename} "
+            "in your environment so sparkctl can find it."
+        )
 
 
 def _create_default_config(
@@ -157,8 +177,7 @@ $ sparkctl configure --local-storage --thrift-server\n
     default=Path(),
     show_default=True,
     help="Base directory for the cluster configuration",
-    type=click.Path(),
-    callback=lambda *x: Path(x[2]),
+    type=click.Path(path_type=Path),
 )
 @click.option(
     "-s",
@@ -166,12 +185,13 @@ $ sparkctl configure --local-storage --thrift-server\n
     default=Path("spark_scratch"),
     show_default=True,
     help=RuntimeDirectories.model_fields["spark_scratch"].description,
-    callback=lambda *x: Path(x[2]),
+    type=click.Path(path_type=Path),
 )
 @click.option(
     "-e",
     "--executor-cores",
     default=sparkctl_settings.runtime.get("executor_cores"),
+    type=int,
     show_default=True,
     help=SparkRuntimeParams.model_fields["executor_cores"].description,
 )
@@ -217,7 +237,7 @@ $ sparkctl configure --local-storage --thrift-server\n
     "-t",
     "--spark-defaults-template-file",
     help=SparkRuntimeParams.model_fields["spark_defaults_template_file"].description,
-    callback=lambda *x: None if x[2] is None else Path(x[2]),
+    type=click.Path(path_type=Path),
 )
 @click.option(
     "--local-storage/--no-local-storage",
@@ -234,6 +254,18 @@ $ sparkctl configure --local-storage --thrift-server\n
     help=SparkRuntimeParams.model_fields["start_connect_server"].description,
 )
 @click.option(
+    "--connect-server-port",
+    # Fall back to the model default so the option still works for users whose settings file
+    # predates this field (a missing key would otherwise bind the default to None).
+    default=sparkctl_settings.runtime.get(
+        "connect_server_port",
+        SparkRuntimeParams.model_fields["connect_server_port"].default,
+    ),
+    show_default=True,
+    type=int,
+    help=SparkRuntimeParams.model_fields["connect_server_port"].description,
+)
+@click.option(
     "--history-server/--no-history-server",
     is_flag=True,
     default=sparkctl_settings.runtime.get("start_history_server"),
@@ -246,6 +278,113 @@ $ sparkctl configure --local-storage --thrift-server\n
     default=sparkctl_settings.runtime.get("start_thrift_server"),
     show_default=True,
     help=SparkRuntimeParams.model_fields["start_thrift_server"].description,
+)
+@click.option(
+    "--jupyter/--no-jupyter",
+    is_flag=True,
+    # Fall back to the model default so options added after a user's settings file was written
+    # still work (a missing key would otherwise bind the default to None).
+    default=sparkctl_settings.runtime.get(
+        "start_jupyter", SparkRuntimeParams.model_fields["start_jupyter"].default
+    ),
+    show_default=True,
+    help=SparkRuntimeParams.model_fields["start_jupyter"].description,
+)
+@click.option(
+    "--jupyter-command",
+    default=sparkctl_settings.runtime.get(
+        "jupyter_command", SparkRuntimeParams.model_fields["jupyter_command"].default
+    ),
+    show_default=True,
+    help=SparkRuntimeParams.model_fields["jupyter_command"].description,
+)
+@click.option(
+    "--jupyter-ip",
+    default=sparkctl_settings.runtime.get(
+        "jupyter_ip", SparkRuntimeParams.model_fields["jupyter_ip"].default
+    ),
+    show_default=True,
+    help=SparkRuntimeParams.model_fields["jupyter_ip"].description,
+)
+@click.option(
+    "--jupyter-port",
+    default=sparkctl_settings.runtime.get(
+        "jupyter_port", SparkRuntimeParams.model_fields["jupyter_port"].default
+    ),
+    show_default=True,
+    type=int,
+    help=SparkRuntimeParams.model_fields["jupyter_port"].description,
+)
+@click.option(
+    "--reverse-proxy/--no-reverse-proxy",
+    is_flag=True,
+    default=sparkctl_settings.runtime.get(
+        "enable_reverse_proxy", SparkRuntimeParams.model_fields["enable_reverse_proxy"].default
+    ),
+    show_default=True,
+    help=SparkRuntimeParams.model_fields["enable_reverse_proxy"].description,
+)
+@click.option(
+    "--reverse-proxy-url",
+    default=sparkctl_settings.runtime.get(
+        "reverse_proxy_url", SparkRuntimeParams.model_fields["reverse_proxy_url"].default
+    ),
+    show_default=True,
+    help=SparkRuntimeParams.model_fields["reverse_proxy_url"].description,
+)
+@click.option(
+    "--prometheus/--no-prometheus",
+    is_flag=True,
+    default=sparkctl_settings.runtime.get(
+        "enable_prometheus", SparkRuntimeParams.model_fields["enable_prometheus"].default
+    ),
+    show_default=True,
+    help=SparkRuntimeParams.model_fields["enable_prometheus"].description,
+)
+@click.option(
+    "--metrics-csv/--no-metrics-csv",
+    is_flag=True,
+    default=sparkctl_settings.runtime.get(
+        "enable_metrics_csv", SparkRuntimeParams.model_fields["enable_metrics_csv"].default
+    ),
+    show_default=True,
+    help=SparkRuntimeParams.model_fields["enable_metrics_csv"].description,
+)
+@click.option(
+    "--metrics-csv-period",
+    default=sparkctl_settings.runtime.get(
+        "metrics_csv_period", SparkRuntimeParams.model_fields["metrics_csv_period"].default
+    ),
+    show_default=True,
+    type=int,
+    help=SparkRuntimeParams.model_fields["metrics_csv_period"].description,
+)
+@click.option(
+    "--gpus/--no-gpus",
+    is_flag=True,
+    default=sparkctl_settings.runtime.get(
+        "enable_gpus", SparkRuntimeParams.model_fields["enable_gpus"].default
+    ),
+    show_default=True,
+    help=SparkRuntimeParams.model_fields["enable_gpus"].description,
+)
+@click.option(
+    "--gpus-per-node",
+    default=sparkctl_settings.runtime.get(
+        "gpus_per_node", SparkRuntimeParams.model_fields["gpus_per_node"].default
+    ),
+    show_default=True,
+    type=int,
+    help=SparkRuntimeParams.model_fields["gpus_per_node"].description,
+)
+@click.option(
+    "--rapids/--no-rapids",
+    is_flag=True,
+    default=sparkctl_settings.runtime.get(
+        "enable_rapids", SparkRuntimeParams.model_fields["enable_rapids"].default
+    ),
+    show_default=True,
+    help=SparkRuntimeParams.model_fields["enable_rapids"].description,
 )
 @click.option(
     "-l",
@@ -275,7 +414,7 @@ $ sparkctl configure --local-storage --thrift-server\n
     default=Path(),
     show_default=True,
     help=RuntimeDirectories.model_fields["metastore_dir"].description,
-    callback=lambda *x: Path(x[2]),
+    type=click.Path(path_type=Path),
 )
 @click.option(
     "-P",
@@ -310,7 +449,7 @@ def configure(
     start: bool,
     directory: Path,
     spark_scratch: Path,
-    executor_cores: int,
+    executor_cores: int | None,
     executor_memory_gb: int,
     driver_memory_gb: int,
     node_memory_overhead_gb: int,
@@ -319,8 +458,21 @@ def configure(
     spark_defaults_template_file: Path | None,
     local_storage: bool,
     connect_server: bool,
+    connect_server_port: int,
     history_server: bool,
     thrift_server: bool,
+    jupyter: bool,
+    jupyter_command: str,
+    jupyter_ip: str,
+    jupyter_port: int,
+    reverse_proxy: bool,
+    reverse_proxy_url: str | None,
+    prometheus: bool,
+    metrics_csv: bool,
+    metrics_csv_period: int,
+    gpus: bool,
+    gpus_per_node: int | None,
+    rapids: bool,
     spark_log_level: str | None,
     hive_metastore: bool,
     postgres_hive_metastore: bool,
@@ -333,7 +485,7 @@ def configure(
     setup_logging(
         filename="sparkctl.log",
         console_level=ctx.find_root().params["console_level"],
-        file_level=ctx.find_root().params["console_level"],
+        file_level=ctx.find_root().params["file_level"],
         mode="a",
     )
     if python_path is None and use_current_python:
@@ -355,8 +507,21 @@ def configure(
                 spark_defaults_template_file=spark_defaults_template_file,
                 use_local_storage=local_storage,
                 start_connect_server=connect_server,
+                connect_server_port=connect_server_port,
                 start_history_server=history_server,
                 start_thrift_server=thrift_server,
+                start_jupyter=jupyter,
+                jupyter_command=jupyter_command,
+                jupyter_ip=jupyter_ip,
+                jupyter_port=jupyter_port,
+                enable_reverse_proxy=reverse_proxy,
+                reverse_proxy_url=reverse_proxy_url,
+                enable_prometheus=prometheus,
+                enable_metrics_csv=metrics_csv,
+                metrics_csv_period=metrics_csv_period,
+                enable_gpus=gpus,
+                gpus_per_node=gpus_per_node,
+                enable_rapids=rapids,
                 spark_log_level=spark_log_level,
                 enable_hive_metastore=hive_metastore,
                 enable_postgres_hive_metastore=postgres_hive_metastore,
@@ -408,8 +573,7 @@ $ sparkctl start --wait\n
     default=Path(),
     show_default=True,
     help="Base directory for the cluster configuration",
-    type=click.Path(),
-    callback=lambda *x: Path(x[2]),
+    type=click.Path(path_type=Path),
 )
 @click.option(
     "-t",
@@ -423,7 +587,7 @@ def start(ctx: click.Context, wait: bool, directory: Path, timeout: float | None
     setup_logging(
         filename="sparkctl.log",
         console_level=ctx.find_root().params["console_level"],
-        file_level=ctx.find_root().params["console_level"],
+        file_level=ctx.find_root().params["file_level"],
         mode="a",
     )
     mgr = ClusterManager.load(directory)
@@ -461,21 +625,50 @@ $ sparkctl stop --directory ./my-spark-config\n
     default=Path(),
     show_default=True,
     help="Base directory for the cluster configuration",
-    type=click.Path(),
-    callback=lambda *x: Path(x[2]),
+    type=click.Path(path_type=Path),
 )
-def stop(directory: Path) -> None:
+@click.pass_context
+def stop(ctx: click.Context, directory: Path) -> None:
     """Stop a Spark cluster."""
+    setup_logging(
+        filename="sparkctl.log",
+        console_level=ctx.find_root().params["console_level"],
+        file_level=ctx.find_root().params["file_level"],
+        mode="a",
+    )
     mgr = ClusterManager.load(directory)
     mgr.stop()
 
 
 @click.command()
-@click.argument("directory", callback=lambda *x: Path(x[2]))
-def clean(directory: Path) -> None:
-    """Delete all Spark runtime files in the directory."""
-    mgr = ClusterManager.load(directory)
-    mgr.clean()
+@click.argument("directory", type=click.Path(path_type=Path))
+@click.option(
+    "--force/--no-force",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Clean even if a cluster appears to be running. By default clean refuses in that case "
+    "because it would delete the files needed to stop the cluster.",
+)
+@click.pass_context
+def clean(ctx: click.Context, directory: Path, force: bool) -> None:
+    """Delete all Spark runtime files in the directory.
+
+    Stop the cluster before cleaning. By default this refuses to run while a cluster appears to be
+    running, since it deletes the state needed to stop it; pass --force to override.
+
+    This also deletes the configured spark_scratch directory recursively, even when it is located
+    outside the base configuration directory. Point spark_scratch at a dedicated directory.
+    """
+    setup_logging(
+        filename="sparkctl.log",
+        console_level=ctx.find_root().params["console_level"],
+        file_level=ctx.find_root().params["file_level"],
+        mode="a",
+    )
+    res = handle_sparkctl_exception(ctx, lambda: ClusterManager.load(directory).clean(force=force))
+    if res[1] != 0:
+        ctx.exit(res[1])
 
 
 def handle_sparkctl_exception(ctx: click.Context, func, *args, **kwargs) -> Any:
@@ -499,4 +692,4 @@ cli.add_command(default_config)
 cli.add_command(configure)
 cli.add_command(start)
 cli.add_command(stop)
-# cli.add_command(clean)
+cli.add_command(clean)

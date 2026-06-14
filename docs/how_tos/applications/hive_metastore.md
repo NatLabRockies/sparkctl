@@ -26,6 +26,6 @@ start the server. Apptainer will cache the container image and you can reuse the
 across Slurm allocations.
 
 **Note**: The metadata about your tables will be stored in Derby or Postgres. Your tables will
-be stored on the filesystem (Parquet files by default) in a directory called `spark_warehouse`,
+be stored on the filesystem (Parquet files by default) in a directory called `spark-warehouse`,
 which gets created in the directory passed to `--metastore-dir` (current directory by default).
 Postgres data, if enabled, will be in the same directory (`pg_data`).

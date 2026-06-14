@@ -3,13 +3,20 @@ import re
 import subprocess
 from pathlib import Path
 from socket import gethostname
-from typing import Any
 
 from sparkctl.compute_interface import ComputeInterface
+from sparkctl.exceptions import InvalidConfiguration
+from sparkctl.models import SparkConfig
 
 
 class SlurmCompute(ComputeInterface):
     """Provides interface to Slurm."""
+
+    def __init__(self, config: SparkConfig) -> None:
+        super().__init__(config)
+        # The node list does not change during a job, so cache it to avoid repeatedly shelling
+        # out to squeue/scontrol (get_node_names is called several times per configure/stop).
+        self._node_names: list[str] | None = None
 
     def get_node_memory_overhead_gb(
         self, driver_memory_gb: int, node_memory_overhead_gb: int
@@ -17,7 +24,7 @@ class SlurmCompute(ComputeInterface):
         if self.is_heterogeneous_slurm_job():
             return node_memory_overhead_gb
 
-        return driver_memory_gb + self._config.runtime.node_memory_overhead_gb
+        return driver_memory_gb + node_memory_overhead_gb
 
     def get_num_workers(self) -> int:
         master_node = gethostname()
@@ -31,7 +38,9 @@ class SlurmCompute(ComputeInterface):
         return num_workers
 
     def get_node_names(self) -> list[str]:
-        return get_node_names(os.environ["SLURM_JOB_ID"])
+        if self._node_names is None:
+            self._node_names = get_node_names(os.environ["SLURM_JOB_ID"])
+        return self._node_names
 
     def get_worker_node_names(self) -> list[str]:
         node_names = self.get_node_names()
@@ -69,6 +78,67 @@ class SlurmCompute(ComputeInterface):
 
         return int(num_cpus)
 
+    def get_worker_num_gpus(self) -> int:
+        # Slurm exposes the per-node GPU count in several variables depending on how the job
+        # requested GPUs. Check them in order of specificity, then fall back to the visible-device
+        # list. Return 0 when none indicate GPUs so that GPU support stays opt-in.
+        het = self.is_heterogeneous_slurm_job()
+        candidates = []
+        if het:
+            candidates.append(os.getenv("SLURM_GPUS_PER_NODE_HET_GROUP_1"))
+        candidates.extend(
+            (
+                os.getenv("SLURM_GPUS_ON_NODE"),
+                os.getenv("SLURM_GPUS_PER_NODE"),
+            )
+        )
+        for value in candidates:
+            num_gpus = _parse_slurm_gpu_count(value)
+            if num_gpus is not None:
+                return num_gpus
+
+        visible = os.getenv("CUDA_VISIBLE_DEVICES")
+        if visible:
+            return len([x for x in visible.split(",") if x.strip()])
+        return 0
+
+    def check_gpu_allocation(self) -> None:
+        # sparkctl writes a single spark.worker.resource.gpu.amount for every worker, equal to the
+        # GPU count detected on the node where `configure` runs. If the GPUs were requested as a
+        # job-wide total (Slurm --gpus) rather than per node (--gpus-per-node), Slurm can split
+        # them unevenly across nodes, leaving a worker with fewer GPUs than declared. That worker
+        # then fails to start and jobs hang with "Initial job has not accepted any resources".
+        # Fail fast when we can detect a non-uniform distribution.
+        num_workers = self.get_num_workers()
+        if num_workers <= 1:
+            return
+        num_gpus_per_node = self.get_worker_num_gpus()
+        if num_gpus_per_node <= 0:
+            return
+
+        het = self.is_heterogeneous_slurm_job()
+        # A per-node request (--gpus-per-node) guarantees the same count on every node.
+        per_node_var = "SLURM_GPUS_PER_NODE_HET_GROUP_1" if het else "SLURM_GPUS_PER_NODE"
+        if os.getenv(per_node_var) is not None:
+            return
+        if het:
+            # SLURM_GPUS would include the driver group's GPUs, so the arithmetic below is not
+            # reliable. Heterogeneous jobs normally set the per-node variable handled above.
+            return
+
+        total_gpus = _parse_slurm_gpu_count(os.getenv("SLURM_GPUS"))
+        if total_gpus is not None and total_gpus != num_gpus_per_node * num_workers:
+            msg = (
+                f"GPUs are not evenly distributed across the {num_workers} worker nodes: this node "
+                f"has {num_gpus_per_node} GPU(s) but the job was allocated {total_gpus} GPU(s) "
+                f"total ({num_gpus_per_node} x {num_workers} != {total_gpus}). sparkctl applies one "
+                "spark.worker.resource.gpu.amount to every worker, so any node with fewer GPUs will "
+                "fail to start and the job will hang with 'Initial job has not accepted any "
+                "resources'. Request a uniform per-node count with the Slurm --gpus-per-node option "
+                "(e.g. --gpus-per-node=4) instead of --gpus."
+            )
+            raise InvalidConfiguration(msg)
+
     def is_heterogeneous_slurm_job(self) -> bool:
         return "SLURM_HET_SIZE" in os.environ
 
@@ -95,17 +165,28 @@ class SlurmCompute(ComputeInterface):
                 raise ValueError(msg)
 
 
+def _parse_slurm_gpu_count(value: str | None) -> int | None:
+    """Parse a Slurm GPU count variable. Returns None when the value is unset or unparseable.
+
+    Slurm reports these in a few formats, e.g. "4", "gpu:4", or "gpu:a100:4".
+    """
+    if not value:
+        return None
+    # The count is the trailing integer, optionally preceded by "<type>:" fields.
+    match = re.search(r"(\d+)\s*$", value.split("(")[0])
+    if match is None:
+        return None
+    return int(match.group(1))
+
+
 def get_node_names(job_id: str) -> list[str]:
     # The squeue command will produce multiple lines if the job is heterogeneous.
-    job_id = os.environ["SLURM_JOB_ID"]
-    output: dict[str, Any] = {}
     proc = subprocess.run(
         ["squeue", "-j", job_id, "--format", '"%5D %1000N"', "-h"], capture_output=True, check=True
     )
     host_lists = [x.strip().split()[1] for x in proc.stdout.decode("utf-8").splitlines() if x]
     final: list[str] = []
     for hosts in host_lists:
-        output.clear()
         proc = subprocess.run(
             ["scontrol", "show", "hostnames", hosts], capture_output=True, check=True
         )

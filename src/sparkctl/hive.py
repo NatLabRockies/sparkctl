@@ -13,8 +13,12 @@ def setup_postgres_metastore(config: SparkConfig) -> None:
     pg_exists = bool(list(pg_data_dir.iterdir()))
     setup_script = config.compute.postgres.get_script_path("setup_metastore")
     assert config.runtime.postgres_password is not None
+    # Pass the password through the environment rather than the command line so that it does not
+    # appear in process listings (ps) on the node.
+    env = {**os.environ, "SPARKCTL_PG_PASSWORD": config.runtime.postgres_password}
     subprocess.run(
-        ["bash", str(setup_script), str(pg_exists).lower(), config.runtime.postgres_password],
+        ["bash", str(setup_script), str(pg_exists).lower()],
+        env=env,
         check=True,
     )
     if not pg_exists:
@@ -42,7 +46,14 @@ def init_hive(config: SparkConfig):
     if hive_home.exists():
         shutil.rmtree(hive_home)
     with tarfile.open(config.binaries.hive_tarball, "r:gz") as tar:
-        tar.extractall(path=config.directories.base)
+        # The extraction `filter` argument (PEP 706) is present on 3.12+ and on later 3.11 patch
+        # releases (3.11.4+), but not on the earliest 3.11 versions this project supports.
+        # `tarfile.data_filter` exists exactly when the argument does, so use the safe "data"
+        # filter when available; the tarball is a trusted Apache release otherwise.
+        if hasattr(tarfile, "data_filter"):
+            tar.extractall(path=config.directories.base, filter="data")
+        else:
+            tar.extractall(path=config.directories.base)
     hive_conf = hive_home / "conf"
 
     shutil.copyfile(
@@ -62,7 +73,9 @@ def init_hive(config: SparkConfig):
             }
         )
         subprocess.run(
-            [f"{hive_home}/bin/schematool", "-dbType", "postgres", "-initSchema"], env=env
+            [f"{hive_home}/bin/schematool", "-dbType", "postgres", "-initSchema"],
+            env=env,
+            check=True,
         )
     finally:
         os.chdir(cwd)

@@ -49,24 +49,40 @@ support.
 Contributions are welcome.
 
 ## Development
-Install the package with its development dependencies:
+This project uses [uv](https://docs.astral.sh/uv/) for environment management. Install the
+package with its development dependencies:
 ```console
-$ pip install -e ".[dev]"
+$ uv sync --extra dev
+```
+
+Lint, format, and type-check the code with [ruff](https://docs.astral.sh/ruff/) and
+[ty](https://github.com/astral-sh/ty):
+```console
+$ uv run ruff check .
+$ uv run ruff format --check .
+$ uv run ty check
+```
+
+These checks also run as Git hooks via [prek](https://github.com/j178/prek). Install the hooks
+once and then run them on demand:
+```console
+$ uv run prek install
+$ uv run prek run --all-files
 ```
 
 Run the unit tests. These are fast, require no special resources, and are what CI runs:
 ```console
-$ pytest -m "not integration"
+$ uv run pytest -m "not integration"
 ```
 
 The integration tests download a real Spark and Java distribution into `tests/data/` and start a
 real single-node Spark cluster, so they are slower and require network access and sufficient
 memory. They are excluded from CI; run them locally with:
 ```console
-$ pytest -m integration
+$ uv run pytest -m integration
 ```
 
-Run the complete suite (unit and integration tests) with `pytest`.
+Run the complete suite (unit and integration tests) with `uv run pytest`.
 
 ## License
 sparkctl is released under a BSD 3-Clause [license](https://github.com/NatLabRockies/sparkctl/blob/main/LICENSE).

@@ -13,10 +13,10 @@ This tutorial covers three approaches:
 ## Prerequisites
 
 Install Ibis with the PySpark backend in your Python environment. You must pin `pyspark` to
-version 4.1.2 to match sparkctl's requirements:
+version 4.1.1 to match sparkctl's requirements:
 
 ```console
-$ pip install 'ibis-framework[pyspark]' 'pyspark==4.1.2'
+$ pip install 'ibis-framework[pyspark]' 'pyspark==4.1.1'
 ```
 
 This installs Ibis with PySpark support at the version compatible with sparkctl.
@@ -39,7 +39,7 @@ This approach uses Spark Connect under the hood.
 
    ```console
    $ module load python
-   $ source ~/python-envs/sparkctl
+   $ source ~/python-envs/sparkctl/bin/activate
    ```
 
 3. Add the code below to a Python script. This will configure and start the Spark cluster, create
@@ -93,7 +93,7 @@ multiple scripts or interactive sessions against it.
 
    ```console
    $ module load python
-   $ source ~/python-envs/sparkctl
+   $ source ~/python-envs/sparkctl/bin/activate
    ```
 
 3. Configure the Spark cluster with the Connect Server enabled. The sparkctl code will detect
@@ -158,7 +158,7 @@ issues with Spark Connect.
 
    ```console
    $ module load python
-   $ source ~/python-envs/sparkctl
+   $ source ~/python-envs/sparkctl/bin/activate
    ```
 
 3. Configure the Spark cluster without the Connect Server.

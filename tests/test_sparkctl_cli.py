@@ -88,6 +88,33 @@ def test_configure_start_stop(setup_local_env):
     assert result.exit_code == 0
 
 
+def test_configure_new_feature_flags(setup_local_env):
+    config, tmp_path = setup_local_env
+    cmd = [
+        "configure",
+        "--directory",
+        str(tmp_path),
+        "--spark-scratch",
+        str(tmp_path / "spark_scratch"),
+        "--reverse-proxy",
+        "--prometheus",
+        "--jupyter",
+        "--jupyter-port",
+        "9999",
+        "--gpus-per-node",
+        "8",
+    ]
+    runner = CliRunner()
+    result = runner.invoke(cli, cmd)
+    assert result.exit_code == 0
+    data = json.loads((tmp_path / "config.json").read_text(encoding="utf-8"))
+    assert data["runtime"]["enable_reverse_proxy"]
+    assert data["runtime"]["enable_prometheus"]
+    assert data["runtime"]["start_jupyter"]
+    assert data["runtime"]["jupyter_port"] == 9999
+    assert data["runtime"]["gpus_per_node"] == 8
+
+
 def test_invalid_executor_memory(setup_local_env):
     _, tmp_path = setup_local_env
     cmd = [

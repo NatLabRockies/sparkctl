@@ -1,4 +1,5 @@
 import os
+import shutil
 import signal
 import subprocess
 import time
@@ -47,6 +48,41 @@ class FakePopen:
 @pytest.fixture
 def no_sleep(monkeypatch):
     monkeypatch.setattr(time, "sleep", lambda _: None)
+
+
+def test_start_jupyter_server(tmp_path, monkeypatch, no_sleep):
+    config = make_config(tmp_path, ComputeEnvironment.NATIVE)
+    config.runtime.start_jupyter = True
+    config.runtime.jupyter_port = 9999
+    log_file = config.directories.base / "jupyter.log"
+    captured = {}
+
+    def fake_popen(cmd, **kwargs):
+        captured["cmd"] = cmd
+        # Simulate the server writing its startup banner to the redirected log.
+        log_file.write_text("http://127.0.0.1:9999/tree?token=abc123\n", encoding="utf-8")
+        return FakePopen(cmd, **kwargs)
+
+    monkeypatch.setattr(shutil, "which", lambda name: "/usr/bin/jupyter")
+    monkeypatch.setattr(subprocess, "Popen", fake_popen)
+    runner = SparkProcessRunner(config, SPARK_URL)
+    runner.start_jupyter_server()
+
+    cmd = captured["cmd"]
+    assert cmd[:2] == ["/usr/bin/jupyter", "notebook"]
+    # The default binds to all interfaces so the node is reachable through a login-node tunnel.
+    assert "--ip=0.0.0.0" in cmd
+    assert "--port=9999" in cmd
+    assert "--LanguageServerManager.autodetect=False" in cmd
+    assert (config.directories.base / "jupyter.pid").read_text(encoding="utf-8").strip() == "12345"
+
+
+def test_start_jupyter_server_not_installed(tmp_path, monkeypatch):
+    config = make_config(tmp_path, ComputeEnvironment.NATIVE)
+    monkeypatch.setattr(shutil, "which", lambda name: None)
+    runner = SparkProcessRunner(config, SPARK_URL)
+    with pytest.raises(ExecutionError):
+        runner.start_jupyter_server()
 
 
 def test_start_worker_processes_srun(tmp_path, monkeypatch, no_sleep):
@@ -122,9 +158,10 @@ def test_start_worker_processes_native_uses_ssh(tmp_path, monkeypatch):
     runner = SparkProcessRunner(config, SPARK_URL)
     runner.start_worker_processes(["node1", "node2"], 80)
 
+    # The workers are started concurrently, so the command order is not deterministic.
     assert len(commands) == 2
     assert [cmd[0] for cmd in commands] == ["ssh", "ssh"]
-    assert [cmd[1] for cmd in commands] == ["node1", "node2"]
+    assert {cmd[1] for cmd in commands} == {"node1", "node2"}
 
 
 def test_start_worker_processes_slurm_use_srun_disabled_uses_ssh(tmp_path, monkeypatch):

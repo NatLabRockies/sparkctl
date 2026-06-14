@@ -6,7 +6,7 @@ This page assumes that you have allocated compute nodes via Slurm.
 
    ```console
    $ module load python
-   $ source ~/python-envs/sparkctl
+   $ source ~/python-envs/sparkctl/bin/activate
    ```
 
 2. Configure and start the Spark cluster. The sparkctl code will detect the compute nodes based on

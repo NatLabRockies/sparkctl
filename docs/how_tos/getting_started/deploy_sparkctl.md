@@ -23,14 +23,14 @@ Here is an example filesystem layout:
 ├── hadoop-3.4.1/
 ├── jdk-21.0.7/
 ├── postgresql-42.7.4.jar
-├── spark-4.1.2-bin-hadoop3/
+├── spark-4.1.1-bin-hadoop3/
 ```
 
 ## URLs
 Download locations will vary over time. Here is a set of permanent links to the specific software
-versions tested with Apache Spark v4.1.2:
+versions tested with Apache Spark v4.1.1:
 
-- https://archive.apache.org/dist/spark/spark-4.1.2/spark-4.1.2-bin-hadoop3.tgz
+- https://archive.apache.org/dist/spark/spark-4.1.1/spark-4.1.1-bin-hadoop3.tgz
 - https://download.oracle.com/java/21/archive/jdk-21.0.7_linux-x64_bin.tar.gz
 - https://archive.apache.org/dist/hadoop/common/hadoop-3.4.1/hadoop-3.4.1.tar.gz
 - https://archive.apache.org/dist/hive/hive-4.2.0/apache-hive-4.2.0-bin.tar.gz
@@ -46,7 +46,7 @@ published.
 This command will create a default sparkctl configuration file given this filesystem layout:
 ```console
 $ sparkctl default-config \
-    /datasets/images/apache_spark/spark-4.1.2-bin-hadoop3 \
+    /datasets/images/apache_spark/spark-4.1.1-bin-hadoop3 \
     /datasets/images/apache_spark/jdk-21.0.7 \
     --hadoop-path /datasets/images/apache_spark/hadoop-3.4.1 \
     --hive-tarball /datasets/images/apache_spark/apache-hive-4.2.0-bin.tar.gz \

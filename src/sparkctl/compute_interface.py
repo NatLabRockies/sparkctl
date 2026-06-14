@@ -41,6 +41,10 @@ class ComputeInterface(abc.ABC):
         """Return the number of CPUs in the compute node"""
 
     @abc.abstractmethod
+    def get_worker_num_gpus(self) -> int:
+        """Return the number of GPUs in the compute node. Returns 0 if none are detected."""
+
+    @abc.abstractmethod
     def is_heterogeneous_slurm_job(self) -> bool:
         """Return True if the environment indicates a heterogeneous Slurm job."""
 
@@ -51,3 +55,10 @@ class ComputeInterface(abc.ABC):
     @abc.abstractmethod
     def run_checks(self) -> None:
         """Run checks on Slurm environment variables."""
+
+    def check_gpu_allocation(self) -> None:
+        """Validate that GPU scheduling can succeed on every worker node.
+
+        The default implementation performs no checks. Environments where worker nodes can end up
+        with differing GPU counts (e.g. Slurm) override this to fail fast.
+        """

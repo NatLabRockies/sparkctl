@@ -94,13 +94,19 @@ This TOML file stores environment-specific settings that rarely change:
 
 ```toml
 [binaries]
-spark_home = "/path/to/spark"
-java_home = "/path/to/java"
+spark_path = "/path/to/spark"
+java_path = "/path/to/java"
 ```
 
 These settings tell sparkctl where to find Spark and Java. You can also set global settings that
 apply every time you run `sparkctl configure`. For example, if you always want to use Spark Connect,
-you can set `spark_connect_server = true` and avoid having to set it each time you configure.
+you can set `start_connect_server = true` in a `[runtime]` section and avoid having to set it each
+time you configure:
+
+```toml
+[runtime]
+start_connect_server = true
+```
 
 ### Runtime Configuration (`./conf/`)
 

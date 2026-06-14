@@ -70,24 +70,26 @@ export the relevant variables yourself, for example through `spark-env.sh` in th
 
 If you are running pyspark/spark-submit after installing via `pip install sparkctl[pyspark]`,
 your version of pyspark must match the cluster version exactly. Client version 4.1.3 is
-incompatible with cluster version 4.1.2.
+incompatible with cluster version 4.1.1.
 
 ### Why can't my workers connect to the master?
 
 Common causes:
 
 1. **High-bandwidth nodes**: Some NLR Kestrel compute nodes have two network cards, which Spark
-   cannot deal with. Set `--constaint lbw` when allocating nodes.
+   cannot deal with. Set `--constraint lbw` when allocating nodes.
 
 Check the Spark master logs in `./spark_scratch/logs/` for connection errors.
 
 ### How do I connect to the Spark Web UI?
 
-The Spark master runs a web UI on port 4040 (driver) or 8080 (master). Since HPC compute nodes
-aren't directly accessible, use SSH tunneling:
+Spark runs a web UI on port 8080 (master) and port 4040 (driver/application). Since HPC compute
+nodes aren't directly accessible, use SSH tunneling. Substitute the name of your compute node
+(it is listed in `./conf/workers`) for `$COMPUTE_NODE`:
 
 ```console
-$ ssh -L 8080:$(hostname):8080 user@hpc-login-node
+$ export COMPUTE_NODE=<your-compute-node-name>
+$ ssh -L 8080:$COMPUTE_NODE:8080 -L 4040:$COMPUTE_NODE:4040 user@hpc-login-node
 ```
 
 Then open `http://localhost:8080` or `http://localhost:4040` in your browser.
@@ -104,13 +106,13 @@ Common causes:
 3. **Too few partitions**: Increase `spark.sql.shuffle.partitions`.
 4. **Too many partitions**: Decrease partitions if you have many small tasks.
 5. **Slow storage**: Ensure shuffle storage uses fast local SSDs, not shared filesystem.
+6. **Non-ideal partitioning**: If you are trying to partition-by-column in the same query as your
+   main work, especially where you significantly increased the shuffle partitions, persist your
+   main work first. Then repartition in a second task.
 7. **Query too complex**: If you are trying to run a very complex query where subtasks have
    different data sizes and partitioning needs, consider breaking the query into smaller parts with
    different settings. Persist intermediate results to the filesystem so that you can checkpoint and
    make incremental progress.
-6. **Non-ideal partitioning**: If you are trying to partition-by-column in the same query as your
-   main work, especially where you significantly increased the shuffle partitions, persist your
-   main work first. Then repartition in a second task.
 
 See the {ref}`how-tos-debugging` for performance troubleshooting.
 

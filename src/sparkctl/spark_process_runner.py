@@ -1,11 +1,14 @@
 import os
+import re
 import shlex
 import shutil
 import signal
 import stat
 import subprocess
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+from socket import gethostname
 from typing import Any
 
 from loguru import logger
@@ -34,7 +37,11 @@ class SparkProcessRunner:
 
     def start_connect_server(self) -> None:
         """Start the Spark connect server."""
-        cmd = f"{self._start_connect_server_cmd()} --master {self._url}"
+        port = self._config.runtime.connect_server_port
+        cmd = (
+            f"{self._start_connect_server_cmd()} --master {self._url} "
+            f"--conf spark.connect.grpc.binding.port={port}"
+        )
         self._check_run_command(cmd)
 
     def stop_connect_server(self) -> int:
@@ -58,6 +65,124 @@ class SparkProcessRunner:
         """Stop the Apache Thrift server."""
         return self._run_command(self._stop_thrift_server_cmd())
 
+    def start_jupyter_server(self) -> None:
+        """Start a Jupyter server on the local node."""
+        jupyter = shutil.which("jupyter")
+        command = self._config.runtime.jupyter_command
+        if jupyter is None:
+            package = "jupyterlab" if command == "lab" else "notebook"
+            msg = (
+                "jupyter is not installed in the current environment. Install it with "
+                f"`pip install {package}` (or `uv pip install {package}`)."
+            )
+            raise ExecutionError(msg)
+
+        port = self._config.runtime.jupyter_port
+        log_file = self._get_jupyter_log_file()
+        pid_file = self._get_jupyter_pid_file()
+        env = self._get_env()
+        if self._config.runtime.start_connect_server:
+            # Pre-wire notebooks to the Connect server so SparkSession.builder.getOrCreate()
+            # connects to the running cluster without any extra configuration.
+            env["SPARK_REMOTE"] = f"sc://localhost:{self._config.runtime.connect_server_port}"
+        cmd = [
+            jupyter,
+            command,
+            "--no-browser",
+            f"--port={port}",
+            f"--ip={self._config.runtime.jupyter_ip}",
+            f"--notebook-dir={self._config.directories.base}",
+            # Stop jupyter_lsp from probing for language servers that are not installed, which
+            # otherwise floods the log with tracebacks. Passed as config (dotted form) so it is
+            # ignored harmlessly when jupyter_lsp is not present.
+            "--LanguageServerManager.autodetect=False",
+        ]
+        logger.info("Start Jupyter server: {}", " ".join(cmd))
+        with open(log_file, "w", encoding="utf-8") as f_out:
+            proc = subprocess.Popen(
+                cmd,
+                stdin=subprocess.DEVNULL,
+                stdout=f_out,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,
+                env=env,
+            )
+        url = self._wait_for_jupyter_url(proc, log_file)
+        pid_file.write_text(f"{proc.pid}\n", encoding="utf-8")
+        self._log_jupyter_access(url, port, log_file)
+
+    def _wait_for_jupyter_url(self, proc: "subprocess.Popen[bytes]", log_file: Path) -> str | None:
+        """Wait for the server to report its access URL, returning it (or None on timeout).
+
+        Also fails fast if the process exits before it is ready.
+        """
+        url_regex = re.compile(r"https?://\S+/(?:tree|lab)\?token=\w+")
+        for _ in range(40):  # up to ~20 seconds
+            ret = proc.poll()
+            if ret is not None:
+                msg = f"The Jupyter server exited with return code {ret}. See {log_file}."
+                raise ExecutionError(msg)
+            if log_file.exists():
+                match = url_regex.search(log_file.read_text(encoding="utf-8"))
+                if match:
+                    return match.group(0)
+            time.sleep(0.5)
+        return None
+
+    def _log_jupyter_access(self, url: str | None, port: int, log_file: Path) -> None:
+        if url is None:
+            logger.warning(
+                "Started the Jupyter server, but did not detect its access URL within the timeout. "
+                "Find the URL (with token) in {}.",
+                log_file,
+            )
+            return
+
+        host = gethostname()
+        token_match = re.search(r"token=(\w+)", url)
+        token = f"?token={token_match.group(1)}" if token_match else ""
+        path = "lab" if self._config.runtime.jupyter_command == "lab" else "tree"
+        logger.info(
+            "Jupyter is running on {} (port {}). From your laptop, open an SSH tunnel:\n"
+            "    ssh -L {}:{}:{} <your-hpc-login-host>\n"
+            "then browse to:\n"
+            "    http://localhost:{}/{}{}",
+            host,
+            port,
+            port,
+            host,
+            port,
+            port,
+            path,
+            token,
+        )
+
+    def stop_jupyter_server(self) -> int:
+        """Stop the Jupyter server."""
+        pid_file = self._get_jupyter_pid_file()
+        if not pid_file.exists():
+            logger.error("Cannot stop Jupyter server: {} does not exist", pid_file)
+            return 1
+        pid = int(pid_file.read_text(encoding="utf-8").strip())
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except ProcessLookupError:
+            logger.info("The Jupyter server has already exited")
+            pid_file.unlink()
+            return 0
+        if self._wait_for_process_exit(pid, timeout_s=30):
+            logger.info("Stopped the Jupyter server")
+            pid_file.unlink()
+            return 0
+        logger.error("The Jupyter server process {} did not exit within the timeout", pid)
+        return 1
+
+    def _get_jupyter_pid_file(self) -> Path:
+        return self._config.directories.base / "jupyter.pid"
+
+    def _get_jupyter_log_file(self) -> Path:
+        return self._config.directories.base / "jupyter.log"
+
     def start_worker_process(self, memory_gb: int) -> None:
         """Start one Spark worker process."""
         tmp_script = self._make_start_worker_script(self._start_worker_cmd(), memory_gb)
@@ -79,11 +204,15 @@ class SparkProcessRunner:
         start_script = self._sbin_cmd("start-worker.sh")
         tmp_script = self._make_start_worker_script(start_script, memory_gb)
         try:
-            for worker in workers:
-                cmd = ["ssh", worker, str(tmp_script)]
-                subprocess.run(cmd, check=True)
+            # Start the workers concurrently. ssh to each node is independent and otherwise
+            # serializes cluster startup across all worker nodes.
+            failures = self._run_ssh_commands(workers, str(tmp_script))
         finally:
             tmp_script.unlink()
+        if failures:
+            nodes = ", ".join(f"{worker} (rc={rc})" for worker, rc in failures.items())
+            msg = f"Failed to start Spark workers on the following node(s): {nodes}"
+            raise ExecutionError(msg)
 
     def stop_worker_process(self) -> int:
         """Stop the Spark workers."""
@@ -96,15 +225,37 @@ class SparkProcessRunner:
             return self._stop_worker_processes_srun(workers)
 
         tmp_script = self._make_stop_worker_script(self._config.resource_monitor.enabled)
-        ret = 0
-        for worker in workers:
-            cmd = ["ssh", worker, str(tmp_script)]
-            proc = subprocess.run(cmd)
-            if proc.returncode != 0:
-                logger.error("Failed to stop worker on {}: {}", worker, proc.returncode)
-                ret = proc.returncode
-        tmp_script.unlink()
-        return ret
+        try:
+            # Stop the workers concurrently; ssh to each node is independent.
+            failures = self._run_ssh_commands(workers, str(tmp_script))
+        finally:
+            tmp_script.unlink()
+        for worker, rc in failures.items():
+            logger.error("Failed to stop worker on {}: {}", worker, rc)
+        return next(iter(failures.values()), 0)
+
+    @staticmethod
+    def _run_ssh_commands(workers: list[str], script: str) -> dict[str, int]:
+        """Run the script on each worker over ssh concurrently.
+
+        Returns a mapping of worker node name to non-zero return code for any node that failed.
+        """
+
+        def run_one(worker: str) -> int:
+            return subprocess.run(["ssh", worker, script]).returncode
+
+        failures: dict[str, int] = {}
+        # Cap concurrency so a large allocation does not spawn thousands of ssh threads at once;
+        # the bounded pool keeps most of the speedup without exhausting local resources.
+        max_workers = min(32, max(1, len(workers)))
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = {executor.submit(run_one, worker): worker for worker in workers}
+            for future in as_completed(futures):
+                worker = futures[future]
+                rc = future.result()
+                if rc != 0:
+                    failures[worker] = rc
+        return failures
 
     def _use_srun(self) -> bool:
         if self._config.compute.environment != ComputeEnvironment.SLURM:

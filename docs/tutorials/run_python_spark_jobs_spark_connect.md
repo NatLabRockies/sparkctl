@@ -16,7 +16,7 @@ Connect Server.
 
    ```console
    $ module load python
-   $ source ~/python-envs/sparkctl
+   $ source ~/python-envs/sparkctl/bin/activate
    ```
 
 3. Configure the Spark cluster. The sparkctl code will detect the compute nodes based on

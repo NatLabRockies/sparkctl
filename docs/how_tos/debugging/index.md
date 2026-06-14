@@ -18,7 +18,7 @@ Open your browser to http://localhost:4040 after configuring the tunnel to acces
 ## Log files
 sparkctl configures Spark to record log files in the base directory. Spark master, worker, connect
 server, etc, will be in `./spark_scratch/logs`. Executor logs will be in
-`./spark_scratch/worker/app-*/*/stderr`
+`./spark_scratch/workers/app-*/*/stderr`
 
 For example,
 ```console
@@ -44,13 +44,40 @@ queries are often visible in the executor `stderr` files. For example, if a job 
 you can tail the `stderr` files to see what is happening:
 
 ```console
-$ tail -f spark_scratch/worker/*/*/stderr
+$ tail -f spark_scratch/workers/*/*/stderr
 ```
 
-If you have many executors, you may want to tail only the most recent ones. Identify them with
+If you have many executors, you may want to tail only the most recent ones. List the `stderr`
+files newest-first with (works on both Linux and macOS):
 ```console
-$ find spark_scratch -type f -name stderr -exec stat -f '%m %Sm %N' {} + 2>/dev/null | sort -n
+$ ls -lt spark_scratch/workers/*/*/stderr | head
 ```
+
+## Jobs hang with "Initial job has not accepted any resources"
+If a job never starts and the driver repeatedly logs
+
+```console
+WARN TaskSchedulerImpl: Initial job has not accepted any resources; check your cluster UI to
+ensure that workers are registered and have sufficient resources
+```
+
+then the driver registered with the master but no executor could be launched. Open the master web
+UI on port 8080 (see [above](#spark-web-ui)) and check the workers. Common causes:
+
+- **The node has fewer CPUs than `executor_cores`.** An executor must fit on a single worker, so if
+  the worker advertises fewer free cores than `executor_cores`, no executor can be scheduled and the
+  job hangs forever. This frequently happens when a GPU allocation grants GPUs but only one CPU.
+  Check `echo $SLURM_CPUS_ON_NODE`; request more CPUs (e.g. the Slurm `--cpus-per-task` option) or
+  lower `executor_cores`, then reconfigure and restart. As of recent versions sparkctl fails fast at
+  `configure` time when `executor_cores` exceeds the available CPUs rather than letting the job hang.
+- **Executor memory exceeds what the worker offers** — lower `--executor-memory-gb` (or
+  `executor_cores`).
+- **GPU scheduling was enabled but the worker advertises no GPUs.** If you ran `sparkctl configure
+  --gpus` while the cluster was already running, the worker is still advertising zero GPUs, so an
+  executor that requests a GPU can never be placed. Restart the cluster (`sparkctl stop && sparkctl
+  start`) so the worker re-runs GPU discovery. Confirm the worker's `resources` in the master UI
+  lists the expected GPU addresses, and that `conf/get_gpus_resources.sh` prints them when run in
+  the allocation.
 
 ## Spark shuffle partitions
 A common performance issue when running complex queries is due to a non-ideal setting for

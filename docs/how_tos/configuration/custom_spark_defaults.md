@@ -1,4 +1,4 @@
-# How to use a custom spark-default.conf file
+# How to use a custom spark-defaults.conf file
 sparkctl sets custom settings in the `spark-defaults.conf` file. For example, it sets
 
 ```
@@ -24,5 +24,5 @@ If you don't want these settings or want to add your own settings every time you
    
 ```{eval-rst}
 .. note:: sparkctl will still append Spark driver, executor, and other settings to the runtime
-   version of the spark-default.conf file.
+   version of the spark-defaults.conf file.
 ```

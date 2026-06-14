@@ -28,7 +28,7 @@ dependencies = [
     "loguru >= 0.7.2",
     "psutil",
     "pydantic >= 2.7, < 3",
-    "pyspark-client == 4.1.2",
+    "pyspark-client == 4.1.1",
     "rich_click",
     "rmon >= 0.4.0",
     "toml",
@@ -37,22 +37,28 @@ dependencies = [
 
 [project.optional-dependencies]
 pyspark = [
-    "pyspark == 4.1.2",
+    "pyspark == 4.1.1",
+]
+# Optional notebook frontend for `sparkctl configure --jupyter`. Installs the classic notebook
+# (the default frontend); install jupyterlab separately to use `--jupyter-command lab`.
+jupyter = [
+    "notebook",
 ]
 dev = [
     "furo",
-    "mypy >=1.13, < 2",
     "myst_parser",
-    "pre-commit",
+    "prek >= 0.2, < 1",
     "pytest",
     "pytest-cov",
     "requests",
+    "ruff >= 0.15, < 1",
     "sphinx",
     "sphinx-click",
     "sphinx-copybutton",
     "sphinxcontrib-mermaid",
     "autodoc_pydantic~=2.0",
     "sphinx-tabs~=3.4",
+    "ty >= 0.0.26",
     "types-requests",
     "types-toml",
 ]
@@ -71,14 +77,14 @@ where = ["src"]
 [tool.setuptools.package-data]
 "*" = ["*.sh", "*.conf", "*.properties", "*.template"]
 
-[tool.mypy]
-check_untyped_defs = true
+[tool.ty.src]
+include = [
+    "src",
+    "tests",
+]
+# Exclude vendored third-party code (Spark/Hadoop/Hive/JDK) downloaded by the integration tests.
 exclude = [
     "tests/data",
-]
-files = [
-  "src",
-  "tests",
 ]
 
 [tool.pytest.ini_options]

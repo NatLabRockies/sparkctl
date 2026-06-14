@@ -18,15 +18,15 @@ Python library to hide the details of starting the cluster and setting environme
 
    ```console
    $ module load python
-   $ source ~/python-envs/sparkctl
+   $ source ~/python-envs/sparkctl/bin/activate
    ```
 
-3. Add the code below to a Python script. This code block will configure and start the Spark
-   cluster, run your Spark job, and then stop the cluster.
+3. Add the code below to a Python script named `my_job.py`. This code block will configure and
+   start the Spark cluster, run your Spark job, and then stop the cluster.
 
    ```python
    from sparkctl import ClusterManager, make_default_spark_config
-   
+
    # This loads your global sparkctl configuration file (~/.sparkctl.toml).
    config = make_default_spark_config()
    # Set runtime options as desired.
@@ -36,3 +36,10 @@ Python library to hide the details of starting the cluster and setting environme
    with mgr.managed_cluster() as spark:
        df = spark.createDataFrame([(x, x + 1) for x in range(1000)], ["a", "b"])
        df.show()
+   ```
+
+4. Run the script.
+
+   ```console
+   $ python my_job.py
+   ```

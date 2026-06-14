@@ -1,12 +1,18 @@
 import os
-from sparkctl.models import AppParams, ComputeParams
 from pathlib import Path
+from typing import Any
 
-from dynaconf import Dynaconf, Validator  # type: ignore
+from dynaconf import Dynaconf, Validator
 from rich import print
 
 from sparkctl.exceptions import InvalidConfiguration
-from sparkctl.models import BinaryLocations, SparkRuntimeParams, SparkConfig
+from sparkctl.models import (
+    AppParams,
+    BinaryLocations,
+    ComputeParams,
+    SparkConfig,
+    SparkRuntimeParams,
+)
 
 DEFAULT_SETTINGS_FILENAME = ".sparkctl.toml"
 SETTINGS_FILE_ENV_VAR = "SPARKCTL_SETTINGS_FILE"
@@ -34,13 +40,14 @@ def _build_settings_files() -> list[Path]:
     return files
 
 
-RUNTIME = {
+RUNTIME: dict[str, Any] = {
     "executor_cores": SparkRuntimeParams.model_fields["executor_cores"].default,
     "executor_memory_gb": SparkRuntimeParams.model_fields["executor_memory_gb"].default,
     "driver_memory_gb": SparkRuntimeParams.model_fields["driver_memory_gb"].default,
     "node_memory_overhead_gb": SparkRuntimeParams.model_fields["node_memory_overhead_gb"].default,
     "use_local_storage": SparkRuntimeParams.model_fields["use_local_storage"].default,
     "start_connect_server": SparkRuntimeParams.model_fields["start_connect_server"].default,
+    "connect_server_port": SparkRuntimeParams.model_fields["connect_server_port"].default,
     "start_history_server": SparkRuntimeParams.model_fields["start_history_server"].default,
     "start_thrift_server": SparkRuntimeParams.model_fields["start_thrift_server"].default,
     "spark_log_level": SparkRuntimeParams.model_fields["spark_log_level"].default,
@@ -57,7 +64,7 @@ RUNTIME = {
     "postgres_password": None,
     "spark_defaults_template_file": None,
 }
-APP = {
+APP: dict[str, Any] = {
     "console_level": AppParams.model_fields["console_level"].default,
     "file_level": AppParams.model_fields["file_level"].default,
     "reraise_exceptions": AppParams.model_fields["reraise_exceptions"].default,
