@@ -1,0 +1,946 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Explanation" href="../explanation/index.html"><link rel="prev" title="NLR Kestrel" href="hpc/kestrel.html">
+
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+        <title>CLI Reference - sparkctl documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/autodoc_pydantic.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=70156fbd" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">sparkctl documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <span class="sidebar-brand-text">sparkctl documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../how_tos/index.html">How Tos</a><input aria-label="Toggle navigation of How Tos" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../how_tos/getting_started/index.html">Getting Started</a><input aria-label="Toggle navigation of Getting Started" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../how_tos/getting_started/installation.html">Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../how_tos/getting_started/deploy_sparkctl.html">Deploy sparkctl in an HPC environment</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../how_tos/configuration/index.html">Configuration</a><input aria-label="Toggle navigation of Configuration" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../how_tos/configuration/compute_nodes.html">How to Select Compute Nodes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../how_tos/configuration/heterogeneous_slurm_jobs.html">Heterogeneous Slurm jobs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../how_tos/configuration/compute_node_failures.html">How to handle compute node failures</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../how_tos/configuration/custom_spark_defaults.html">How to use a custom spark-defaults.conf file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../how_tos/configuration/web_ui_reverse_proxy.html">How to access the Spark web UIs through a reverse proxy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../how_tos/configuration/gpus.html">How to use GPU acceleration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../how_tos/configuration/spark_log_level.html">How to Set a Custom Spark Log Level</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../how_tos/execution/index.html">Execution</a><input aria-label="Toggle navigation of Execution" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../how_tos/execution/start_a_cluster.html">Start a Spark Cluster</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../how_tos/execution/run_jobs.html">How to run Spark jobs in Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../how_tos/execution/resource_monitoring.html">How to to monitor Spark resource utilization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../how_tos/execution/prometheus_metrics.html">How to expose Spark metrics in Prometheus format</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../how_tos/applications/index.html">Applications</a><input aria-label="Toggle navigation of Applications" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../how_tos/applications/hive_metastore.html">How to configure a Hive metastore</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../how_tos/applications/tableau.html">Visualize Data with Tableau</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../how_tos/applications/jupyter.html">How to run a Jupyter notebook against the cluster</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../how_tos/debugging/index.html">Debugging</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/index.html">Tutorials</a><input aria-label="Toggle navigation of Tutorials" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/run_python_spark_jobs_script.html">Run jobs in a Python script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/run_python_spark_jobs_interactively.html">Run jobs interactively with sparkctl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/run_ibis_spark_jobs.html">Use Ibis with sparkctl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/run_python_spark_jobs_spark_connect.html">Run jobs with Spark Connect</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/run_spark_jobs.html">Run jobs with spark-submit or pyspark</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Reference</a><input aria-label="Toggle navigation of Reference" checked="" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="sparkctl_api.html">sparkctl API</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hpc/index.html">HPC</a><input aria-label="Toggle navigation of HPC" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="hpc/kestrel.html">NLR Kestrel</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">CLI Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Frequently Asked Questions</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/reference/cli_reference.md.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="cli-reference">
+<h1>CLI Reference<a class="headerlink" href="#cli-reference" title="Link to this heading">¶</a></h1>
+<section id="sparkctl">
+<h2>sparkctl<a class="headerlink" href="#sparkctl" title="Link to this heading">¶</a></h2>
+<p>sparkctl comands</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sparkctl<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-c">
+<span id="cmdoption-sparkctl-console-level"></span><span class="sig-name descname"><span class="pre">-c</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--console-level</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;console_level&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-c" title="Link to this definition">¶</a></dt>
+<dd><p>Console log level</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">'INFO'</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-f">
+<span id="cmdoption-sparkctl-file-level"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--file-level</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;file_level&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-f" title="Link to this definition">¶</a></dt>
+<dd><p>File log level</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">'DEBUG'</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-r">
+<span id="cmdoption-sparkctl-reraise-exceptions"></span><span class="sig-name descname"><span class="pre">-r</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--reraise-exceptions</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-r" title="Link to this definition">¶</a></dt>
+<dd><p>Reraise unhandled sparkctl exceptions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<section id="sparkctl-clean">
+<h3>clean<a class="headerlink" href="#sparkctl-clean" title="Link to this heading">¶</a></h3>
+<p>Delete all Spark runtime files in the directory.</p>
+<p>Stop the cluster before cleaning. By default this refuses to run while a cluster appears to be
+running, since it deletes the state needed to stop it; pass –force to override.</p>
+<p>This also deletes the configured spark_scratch directory recursively, even when it is located
+outside the base configuration directory. Point spark_scratch at a dedicated directory.</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sparkctl<span class="w"> </span>clean<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DIRECTORY
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-clean-force">
+<span id="cmdoption-sparkctl-clean-no-force"></span><span class="sig-name descname"><span class="pre">--force</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-force</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-clean-force" title="Link to this definition">¶</a></dt>
+<dd><p>Clean even if a cluster appears to be running. By default clean refuses in that case because it would delete the files needed to stop the cluster.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-clean-arg-DIRECTORY">
+<span class="sig-name descname"><span class="pre">DIRECTORY</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-clean-arg-DIRECTORY" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="sparkctl-configure">
+<h3>configure<a class="headerlink" href="#sparkctl-configure" title="Link to this heading">¶</a></h3>
+<p>Create a Spark cluster configuration.</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sparkctl<span class="w"> </span>configure<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-d">
+<span id="cmdoption-sparkctl-configure-directory"></span><span class="sig-name descname"><span class="pre">-d</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--directory</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;directory&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-configure-d" title="Link to this definition">¶</a></dt>
+<dd><p>Base directory for the cluster configuration</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">PosixPath('.')</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-s">
+<span id="cmdoption-sparkctl-configure-spark-scratch"></span><span class="sig-name descname"><span class="pre">-s</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--spark-scratch</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;spark_scratch&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-configure-s" title="Link to this definition">¶</a></dt>
+<dd><p>Directory to use for shuffle data. Use a dedicated directory: <cite>sparkctl clean</cite> deletes it recursively, even when it is outside the base configuration directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">PosixPath('spark_scratch')</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-e">
+<span id="cmdoption-sparkctl-configure-executor-cores"></span><span class="sig-name descname"><span class="pre">-e</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--executor-cores</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;executor_cores&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-configure-e" title="Link to this definition">¶</a></dt>
+<dd><p>Number of cores per executor. By default this is auto-determined: when GPUs are enabled, sparkctl runs one executor per GPU and divides the node’s cores evenly among them (the NVIDIA-recommended layout); otherwise it defaults to 5.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-E">
+<span id="cmdoption-sparkctl-configure-executor-memory-gb"></span><span class="sig-name descname"><span class="pre">-E</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--executor-memory-gb</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;executor_memory_gb&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-configure-E" title="Link to this definition">¶</a></dt>
+<dd><p>Memory per executor in GB. By default, auto-determine by using what is available. This can also be set implicitly by increasing executor_cores.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-M">
+<span id="cmdoption-sparkctl-configure-driver-memory-gb"></span><span class="sig-name descname"><span class="pre">-M</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--driver-memory-gb</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;driver_memory_gb&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-configure-M" title="Link to this definition">¶</a></dt>
+<dd><p>Driver memory in GB. This is the maximum amount of data that can be pulled into the application.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">10</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-o">
+<span id="cmdoption-sparkctl-configure-node-memory-overhead-gb"></span><span class="sig-name descname"><span class="pre">-o</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--node-memory-overhead-gb</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;node_memory_overhead_gb&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-configure-o" title="Link to this definition">¶</a></dt>
+<dd><p>Memory to reserve for system processes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">10</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-dynamic-allocation">
+<span id="cmdoption-sparkctl-configure-no-dynamic-allocation"></span><span class="sig-name descname"><span class="pre">--dynamic-allocation</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-dynamic-allocation</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-configure-dynamic-allocation" title="Link to this definition">¶</a></dt>
+<dd><p>Enable Spark dynamic resource allocation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-m">
+<span id="cmdoption-sparkctl-configure-shuffle-partition-multiplier"></span><span class="sig-name descname"><span class="pre">-m</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--shuffle-partition-multiplier</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;shuffle_partition_multiplier&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-configure-m" title="Link to this definition">¶</a></dt>
+<dd><p>Spark SQL shuffle partition multiplier (multipy by the number of worker CPUs)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">1</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-t">
+<span id="cmdoption-sparkctl-configure-spark-defaults-template-file"></span><span class="sig-name descname"><span class="pre">-t</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--spark-defaults-template-file</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;spark_defaults_template_file&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-configure-t" title="Link to this definition">¶</a></dt>
+<dd><p>Path to a custom spark-defaults.conf template file. If not set, use the sparkctl defaults.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-local-storage">
+<span id="cmdoption-sparkctl-configure-no-local-storage"></span><span class="sig-name descname"><span class="pre">--local-storage</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-local-storage</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-configure-local-storage" title="Link to this definition">¶</a></dt>
+<dd><p>Use compute node local storage for shuffle data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-connect-server">
+<span id="cmdoption-sparkctl-configure-no-connect-server"></span><span class="sig-name descname"><span class="pre">--connect-server</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-connect-server</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-configure-connect-server" title="Link to this definition">¶</a></dt>
+<dd><p>Enable the Spark connect server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-connect-server-port">
+<span class="sig-name descname"><span class="pre">--connect-server-port</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;connect_server_port&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-configure-connect-server-port" title="Link to this definition">¶</a></dt>
+<dd><p>Port on which the Spark Connect server listens.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">15002</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-history-server">
+<span id="cmdoption-sparkctl-configure-no-history-server"></span><span class="sig-name descname"><span class="pre">--history-server</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-history-server</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-configure-history-server" title="Link to this definition">¶</a></dt>
+<dd><p>Enable the Spark history server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-thrift-server">
+<span id="cmdoption-sparkctl-configure-no-thrift-server"></span><span class="sig-name descname"><span class="pre">--thrift-server</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-thrift-server</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-configure-thrift-server" title="Link to this definition">¶</a></dt>
+<dd><p>Enable the Thrift server to connect a SQL client.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-jupyter">
+<span id="cmdoption-sparkctl-configure-no-jupyter"></span><span class="sig-name descname"><span class="pre">--jupyter</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-jupyter</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-configure-jupyter" title="Link to this definition">¶</a></dt>
+<dd><p>Start a Jupyter server on the master node. Pre-wired to the Spark Connect server when it is enabled (the notebook’s SparkSession connects automatically).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-jupyter-command">
+<span class="sig-name descname"><span class="pre">--jupyter-command</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;jupyter_command&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-configure-jupyter-command" title="Link to this definition">¶</a></dt>
+<dd><p>Jupyter frontend to launch, i.e. the <cite>jupyter &lt;command&gt;</cite> subcommand. Defaults to the classic ‘notebook’; use ‘lab’ for JupyterLab.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">'notebook'</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-jupyter-ip">
+<span class="sig-name descname"><span class="pre">--jupyter-ip</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;jupyter_ip&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-configure-jupyter-ip" title="Link to this definition">¶</a></dt>
+<dd><p>IP address the Jupyter server binds to. Defaults to all interfaces so it can be reached by tunneling to the compute node’s hostname through a login node (the common HPC pattern); access is protected by Jupyter’s token. Set to 127.0.0.1 to bind to localhost only, which requires tunneling directly into the compute node.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">'0.0.0.0'</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-jupyter-port">
+<span class="sig-name descname"><span class="pre">--jupyter-port</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;jupyter_port&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-configure-jupyter-port" title="Link to this definition">¶</a></dt>
+<dd><p>Port on which the Jupyter server listens.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">8889</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-reverse-proxy">
+<span id="cmdoption-sparkctl-configure-no-reverse-proxy"></span><span class="sig-name descname"><span class="pre">--reverse-proxy</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-reverse-proxy</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-configure-reverse-proxy" title="Link to this definition">¶</a></dt>
+<dd><p>Run the Spark master as a reverse proxy for the worker and application web UIs. Useful on HPC clusters where the compute nodes are not directly reachable, so the UIs are served through the master node only.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-reverse-proxy-url">
+<span class="sig-name descname"><span class="pre">--reverse-proxy-url</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;reverse_proxy_url&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-configure-reverse-proxy-url" title="Link to this definition">¶</a></dt>
+<dd><p>External URL used to reach the Spark master UI when reverse proxy is enabled and the master is itself behind another front-end proxy. Leave unset to serve relative links (recommended when reaching the master through an SSH tunnel).</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-prometheus">
+<span id="cmdoption-sparkctl-configure-no-prometheus"></span><span class="sig-name descname"><span class="pre">--prometheus</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-prometheus</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-configure-prometheus" title="Link to this definition">¶</a></dt>
+<dd><p>Expose Spark metrics in Prometheus format through the existing web UI ports (no extra ports are opened).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-metrics-csv">
+<span id="cmdoption-sparkctl-configure-no-metrics-csv"></span><span class="sig-name descname"><span class="pre">--metrics-csv</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-metrics-csv</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-configure-metrics-csv" title="Link to this definition">¶</a></dt>
+<dd><p>Write Spark metrics to CSV files in &lt;base&gt;/metrics-csv. Unlike the Prometheus sink, this leaves a durable record on disk after the cluster shuts down.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-metrics-csv-period">
+<span class="sig-name descname"><span class="pre">--metrics-csv-period</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;metrics_csv_period&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-configure-metrics-csv-period" title="Link to this definition">¶</a></dt>
+<dd><p>Interval in seconds at which the CSV metrics sink writes samples.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">10</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-gpus">
+<span id="cmdoption-sparkctl-configure-no-gpus"></span><span class="sig-name descname"><span class="pre">--gpus</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-gpus</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-configure-gpus" title="Link to this definition">¶</a></dt>
+<dd><p>Enable GPU-aware scheduling. Spark workers advertise GPUs and executors/tasks request them. Requires GPUs on the worker nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-gpus-per-node">
+<span class="sig-name descname"><span class="pre">--gpus-per-node</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;gpus_per_node&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-configure-gpus-per-node" title="Link to this definition">¶</a></dt>
+<dd><p>Number of GPUs available on each worker node. Auto-detected from the compute environment by default.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-rapids">
+<span id="cmdoption-sparkctl-configure-no-rapids"></span><span class="sig-name descname"><span class="pre">--rapids</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-rapids</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-configure-rapids" title="Link to this definition">¶</a></dt>
+<dd><p>Enable the NVIDIA RAPIDS Accelerator for Apache Spark to offload SQL/DataFrame operations to GPUs. Implies enable_gpus and requires binaries.rapids_jar_file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-l">
+<span id="cmdoption-sparkctl-configure-spark-log-level"></span><span class="sig-name descname"><span class="pre">-l</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--spark-log-level</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;spark_log_level&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-configure-l" title="Link to this definition">¶</a></dt>
+<dd><p>Set the root log level for all Spark processes. Defaults to Spark’s defaults.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>debug | info | warn | error</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-hive-metastore">
+<span id="cmdoption-sparkctl-configure-no-hive-metastore"></span><span class="sig-name descname"><span class="pre">--hive-metastore</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-hive-metastore</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-configure-hive-metastore" title="Link to this definition">¶</a></dt>
+<dd><p>Create a Hive metastore with Spark defaults (Apache Derby). Supports only one Spark session.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-postgres-hive-metastore">
+<span id="cmdoption-sparkctl-configure-no-postgres-hive-metastore"></span><span class="sig-name descname"><span class="pre">--postgres-hive-metastore</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-postgres-hive-metastore</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-configure-postgres-hive-metastore" title="Link to this definition">¶</a></dt>
+<dd><p>Create a metastore with PostgreSQL. Supports multiple Spark sessions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-w">
+<span id="cmdoption-sparkctl-configure-metastore-dir"></span><span class="sig-name descname"><span class="pre">-w</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--metastore-dir</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;metastore_dir&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-configure-w" title="Link to this definition">¶</a></dt>
+<dd><p>Set a custom directory for the metastore and warehouse.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">PosixPath('.')</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-P">
+<span id="cmdoption-sparkctl-configure-python-path"></span><span class="sig-name descname"><span class="pre">-P</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--python-path</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;python_path&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-configure-P" title="Link to this definition">¶</a></dt>
+<dd><p>Python path to set for Spark workers. Use the Python inside the Spark distribution by default.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-resource-monitor">
+<span id="cmdoption-sparkctl-configure-no-resource-monitor"></span><span class="sig-name descname"><span class="pre">--resource-monitor</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-resource-monitor</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-configure-resource-monitor" title="Link to this definition">¶</a></dt>
+<dd><p>Enable resource monitoring.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-start">
+<span id="cmdoption-sparkctl-configure-no-start"></span><span class="sig-name descname"><span class="pre">--start</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-start</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-configure-start" title="Link to this definition">¶</a></dt>
+<dd><p>Start the cluster after configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-configure-use-current-python">
+<span id="cmdoption-sparkctl-configure-no-use-current-python"></span><span class="sig-name descname"><span class="pre">--use-current-python</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-use-current-python</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-configure-use-current-python" title="Link to this definition">¶</a></dt>
+<dd><p>Use the Python executable in the current environment for Spark workers. –python-path takes precedence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">True</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Examples:</p>
+<p>$ sparkctl configure –start</p>
+<p>$ sparkctl configure –shuffle-partition-multiplier 4 –local-storage</p>
+<p>$ sparkctl configure –local-storage –thrift-server</p>
+</section>
+<section id="sparkctl-default-config">
+<h3>default-config<a class="headerlink" href="#sparkctl-default-config" title="Link to this heading">¶</a></h3>
+<p>Create a sparkctl config file that defines paths to Spark binaries.
+This is a one-time requirement when installing sparkctl in a new environment.</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sparkctl<span class="w"> </span>default-config<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SPARK_PATH<span class="w"> </span>JAVA_PATH
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-default-config-d">
+<span id="cmdoption-sparkctl-default-config-directory"></span><span class="sig-name descname"><span class="pre">-d</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--directory</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;directory&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-default-config-d" title="Link to this definition">¶</a></dt>
+<dd><p>Directory in which to create the sparkctl config file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">PosixPath('/home/runner')</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-default-config-e">
+<span id="cmdoption-sparkctl-default-config-compute-environment"></span><span class="sig-name descname"><span class="pre">-e</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--compute-environment</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;compute_environment&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-default-config-e" title="Link to this definition">¶</a></dt>
+<dd><p>Compute environment</p>
+<dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>native | slurm</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-default-config-H">
+<span id="cmdoption-sparkctl-default-config-hadoop-path"></span><span class="sig-name descname"><span class="pre">-H</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--hadoop-path</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;hadoop_path&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-default-config-H" title="Link to this definition">¶</a></dt>
+<dd><p>Directory containing Hadoop binaries.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-default-config-h">
+<span id="cmdoption-sparkctl-default-config-hive-tarball"></span><span class="sig-name descname"><span class="pre">-h</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--hive-tarball</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;hive_tarball&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-default-config-h" title="Link to this definition">¶</a></dt>
+<dd><p>File containing Hive binaries.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-default-config-p">
+<span id="cmdoption-sparkctl-default-config-postgresql-jar-file"></span><span class="sig-name descname"><span class="pre">-p</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--postgresql-jar-file</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;postgresql_jar_file&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-default-config-p" title="Link to this definition">¶</a></dt>
+<dd><p>Path to PostgreSQL jar file.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-default-config-R">
+<span id="cmdoption-sparkctl-default-config-rapids-jar-file"></span><span class="sig-name descname"><span class="pre">-R</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--rapids-jar-file</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;rapids_jar_file&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-default-config-R" title="Link to this definition">¶</a></dt>
+<dd><p>Path to the NVIDIA RAPIDS Accelerator for Apache Spark jar file. Only required to enable RAPIDS GPU acceleration.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-default-config-arg-SPARK_PATH">
+<span class="sig-name descname"><span class="pre">SPARK_PATH</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-default-config-arg-SPARK_PATH" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-default-config-arg-JAVA_PATH">
+<span class="sig-name descname"><span class="pre">JAVA_PATH</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-default-config-arg-JAVA_PATH" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<div class="line-block">
+<div class="line">Examples:</div>
+</div>
+<p>$ sparkctl default-config </p>
+<blockquote>
+<div><p>/datasets/images/apache-spark/spark-4.1.1-bin-hadoop3 </p>
+<p>/datasets/images/apache-spark/jdk-21.0.7 </p>
+<p>-e slurm </p>
+</div></blockquote>
+<p>$ sparkctl default-config ~/apache-spark/spark-4.1.1-bin-hadoop3 ~/jdk-21.0.8 -e native</p>
+</section>
+<section id="sparkctl-start">
+<h3>start<a class="headerlink" href="#sparkctl-start" title="Link to this heading">¶</a></h3>
+<p>Start a Spark cluster with an existing configuration.</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sparkctl<span class="w"> </span>start<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-start-wait">
+<span id="cmdoption-sparkctl-start-no-wait"></span><span class="sig-name descname"><span class="pre">--wait</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-wait</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-sparkctl-start-wait" title="Link to this definition">¶</a></dt>
+<dd><p>If True, wait until the user presses Ctrl-C or timeout is reached and then stop the cluster. If False, start the cluster and exit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-start-d">
+<span id="cmdoption-sparkctl-start-directory"></span><span class="sig-name descname"><span class="pre">-d</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--directory</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;directory&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-start-d" title="Link to this definition">¶</a></dt>
+<dd><p>Base directory for the cluster configuration</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">PosixPath('.')</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-start-t">
+<span id="cmdoption-sparkctl-start-timeout"></span><span class="sig-name descname"><span class="pre">-t</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--timeout</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;timeout&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-start-t" title="Link to this definition">¶</a></dt>
+<dd><p>If –wait is set, timeout in minutes. Defaults to no timeout.</p>
+</dd></dl>
+
+<p>Examples:</p>
+<p>$ sparkctl start</p>
+<p>$ sparkctl start –directory ./my-spark-config</p>
+<p>$ sparkctl start –wait</p>
+</section>
+<section id="sparkctl-stop">
+<h3>stop<a class="headerlink" href="#sparkctl-stop" title="Link to this heading">¶</a></h3>
+<p>Stop a Spark cluster.</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sparkctl<span class="w"> </span>stop<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-sparkctl-stop-d">
+<span id="cmdoption-sparkctl-stop-directory"></span><span class="sig-name descname"><span class="pre">-d</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--directory</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;directory&gt;</span></span><a class="headerlink" href="#cmdoption-sparkctl-stop-d" title="Link to this definition">¶</a></dt>
+<dd><p>Base directory for the cluster configuration</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">PosixPath('.')</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Examples:</p>
+<p>$ sparkctl stop</p>
+<p>$ sparkctl stop –directory ./my-spark-config</p>
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../explanation/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Explanation</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="hpc/kestrel.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">NLR Kestrel</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, Alliance for Energy Innovation, LLC
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">CLI Reference</a><ul>
+<li><a class="reference internal" href="#sparkctl">sparkctl</a><ul>
+<li><a class="reference internal" href="#sparkctl-clean">clean</a></li>
+<li><a class="reference internal" href="#sparkctl-configure">configure</a></li>
+<li><a class="reference internal" href="#sparkctl-default-config">default-config</a></li>
+<li><a class="reference internal" href="#sparkctl-start">start</a></li>
+<li><a class="reference internal" href="#sparkctl-stop">stop</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=38b66d78"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=3a0c56fd"></script>
+    </body>
+</html>

@@ -1,0 +1,561 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="How to Set a Custom Spark Log Level" href="spark_log_level.html"><link rel="prev" title="How to access the Spark web UIs through a reverse proxy" href="web_ui_reverse_proxy.html">
+
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+        <title>How to use GPU acceleration - sparkctl documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/autodoc_pydantic.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=70156fbd" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../index.html"><div class="brand">sparkctl documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
+  
+  <span class="sidebar-brand-text">sparkctl documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../index.html">How Tos</a><input aria-label="Toggle navigation of How Tos" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../getting_started/index.html">Getting Started</a><input aria-label="Toggle navigation of Getting Started" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../getting_started/deploy_sparkctl.html">Deploy sparkctl in an HPC environment</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current has-children"><a class="reference internal" href="index.html">Configuration</a><input aria-label="Toggle navigation of Configuration" checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="compute_nodes.html">How to Select Compute Nodes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="heterogeneous_slurm_jobs.html">Heterogeneous Slurm jobs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="compute_node_failures.html">How to handle compute node failures</a></li>
+<li class="toctree-l3"><a class="reference internal" href="custom_spark_defaults.html">How to use a custom spark-defaults.conf file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="web_ui_reverse_proxy.html">How to access the Spark web UIs through a reverse proxy</a></li>
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">How to use GPU acceleration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="spark_log_level.html">How to Set a Custom Spark Log Level</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../execution/index.html">Execution</a><input aria-label="Toggle navigation of Execution" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../execution/start_a_cluster.html">Start a Spark Cluster</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../execution/run_jobs.html">How to run Spark jobs in Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../execution/resource_monitoring.html">How to to monitor Spark resource utilization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../execution/prometheus_metrics.html">How to expose Spark metrics in Prometheus format</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../applications/index.html">Applications</a><input aria-label="Toggle navigation of Applications" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../applications/hive_metastore.html">How to configure a Hive metastore</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../applications/tableau.html">Visualize Data with Tableau</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../applications/jupyter.html">How to run a Jupyter notebook against the cluster</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../debugging/index.html">Debugging</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a><input aria-label="Toggle navigation of Tutorials" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/run_python_spark_jobs_script.html">Run jobs in a Python script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/run_python_spark_jobs_interactively.html">Run jobs interactively with sparkctl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/run_ibis_spark_jobs.html">Use Ibis with sparkctl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/run_python_spark_jobs_spark_connect.html">Run jobs with Spark Connect</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/run_spark_jobs.html">Run jobs with spark-submit or pyspark</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../reference/index.html">Reference</a><input aria-label="Toggle navigation of Reference" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/sparkctl_api.html">sparkctl API</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../reference/hpc/index.html">HPC</a><input aria-label="Toggle navigation of HPC" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/hpc/kestrel.html">NLR Kestrel</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/cli_reference.html">CLI Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../../_sources/how_tos/configuration/gpus.md.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="how-to-use-gpu-acceleration">
+<h1>How to use GPU acceleration<a class="headerlink" href="#how-to-use-gpu-acceleration" title="Link to this heading">¶</a></h1>
+<section id="rapids-accelerator">
+<h2>RAPIDS Accelerator<a class="headerlink" href="#rapids-accelerator" title="Link to this heading">¶</a></h2>
+<p>The <a class="reference external" href="https://nvidia.github.io/spark-rapids/">NVIDIA RAPIDS Accelerator for Apache Spark</a> is the
+recommended way to accelerate Spark workloads on NVIDIA GPUs. It offloads SQL and DataFrame
+operations to GPUs with no code changes — supported operators run on the GPU automatically, and
+unsupported ones fall back to CPUs.</p>
+<ol class="arabic">
+<li><p>Download the RAPIDS Accelerator jar from the
+<a class="reference external" href="https://nvidia.github.io/spark-rapids/docs/download.html">RAPIDS download page</a>.
+(This may have already been done by your local sparkctl administrator.)</p></li>
+<li><p>If needed, record its path when creating your settings file:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sparkctl<span class="w"> </span>default-config<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--rapids-jar-file<span class="w"> </span>/path/to/rapids-4-spark_2.13-&lt;version&gt;.jar<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>/path/to/spark<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>/path/to/java
+</pre></div>
+</div>
+</li>
+<li><p>Enable RAPIDS:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sparkctl<span class="w"> </span>configure<span class="w"> </span>--rapids
+</pre></div>
+</div>
+</li>
+</ol>
+<p>This enables GPU-aware scheduling behind the scenes and writes these settings to
+<code class="docutils literal notranslate"><span class="pre">spark-defaults.conf</span></code>:</p>
+<ul class="simple">
+<li><p>Plugin jar via <code class="docutils literal notranslate"><span class="pre">spark.jars</span></code>, plugin registration via <code class="docutils literal notranslate"><span class="pre">spark.plugins</span> <span class="pre">com.nvidia.spark.SQLPlugin</span></code></p></li>
+<li><p>GPU-aware scheduling (<code class="docutils literal notranslate"><span class="pre">spark.worker.resource.gpu.*</span></code>, <code class="docutils literal notranslate"><span class="pre">spark.executor.resource.gpu.*</span></code>,
+<code class="docutils literal notranslate"><span class="pre">spark.task.resource.gpu.*</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">spark.rapids.sql.enabled</span></code></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">spark.jars</span></code> is used instead of <code class="docutils literal notranslate"><span class="pre">spark.{driver,executor}.extraClassPath</span></code> so the
+RAPIDS jar does not conflict with the classpath entries the PostgreSQL Hive metastore sets.</p>
+</div>
+<section id="verifying-gpu-acceleration">
+<h3>Verifying GPU acceleration<a class="headerlink" href="#verifying-gpu-acceleration" title="Link to this heading">¶</a></h3>
+<p>Not every operator is GPU-accelerated. Unsupported expressions, data types, and Python/Scala UDFs
+fall back to the CPU, and a query that bounces between CPU and GPU can be slower than staying on
+the CPU. Before assuming a query is GPU-accelerated, ask RAPIDS what it actually placed on the GPU:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">spark</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;spark.rapids.sql.explain&quot;</span><span class="p">,</span> <span class="s2">&quot;NOT_ON_GPU&quot;</span><span class="p">)</span>  <span class="c1"># log every operator that fell back</span>
+<span class="n">df</span><span class="o">.</span><span class="n">explain</span><span class="p">()</span>  <span class="c1"># &quot;GPU&quot; nodes ran on the GPU; &quot;Project&quot;/&quot;Filter&quot; without &quot;Gpu&quot; fell back to CPU</span>
+</pre></div>
+</div>
+</section>
+<section id="tuning-rapids">
+<h3>Tuning RAPIDS<a class="headerlink" href="#tuning-rapids" title="Link to this heading">¶</a></h3>
+<p>Useful tuning knobs (set in your settings file’s <code class="docutils literal notranslate"><span class="pre">spark_defaults</span></code> or at runtime):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">spark.rapids.sql.concurrentGpuTasks</span></code> (sparkctl defaults to <code class="docutils literal notranslate"><span class="pre">1</span></code>) — how many tasks share a GPU at
+once. Raising it to <code class="docutils literal notranslate"><span class="pre">2</span></code>–<code class="docutils literal notranslate"><span class="pre">4</span></code> can improve throughput if GPU memory allows.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">spark.sql.files.maxPartitionBytes</span></code> — larger partitions (e.g. <code class="docutils literal notranslate"><span class="pre">512m</span></code>) give the GPU more work per
+task, which it prefers over many tiny tasks.</p></li>
+<li><p>Keep Adaptive Query Execution on (<code class="docutils literal notranslate"><span class="pre">spark.sql.adaptive.enabled</span> <span class="pre">true</span></code>, the Spark default).</p></li>
+</ul>
+</section>
+<section id="custom-gpu-code-advanced">
+<h3>Custom GPU code (advanced)<a class="headerlink" href="#custom-gpu-code-advanced" title="Link to this heading">¶</a></h3>
+<p>If you call GPU libraries directly (e.g. CuPy, PyTorch, RAPIDS cuDF, or XGBoost) inside your tasks,
+RAPIDS does not apply. The section below explains how GPU scheduling works; once enabled, pin each
+task to its assigned GPU using the task context:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pyspark</span><span class="w"> </span><span class="kn">import</span> <span class="n">TaskContext</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_on_gpu</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
+    <span class="n">ctx</span> <span class="o">=</span> <span class="n">TaskContext</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+    <span class="n">gpu</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">resources</span><span class="p">()[</span><span class="s2">&quot;gpu&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">addresses</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># address(es) assigned to this task</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">cupy</span>
+    <span class="k">with</span> <span class="n">cupy</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">Device</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">gpu</span><span class="p">)):</span>
+        <span class="o">...</span>  <span class="c1"># your GPU work here</span>
+
+<span class="n">rdd</span><span class="o">.</span><span class="n">mapPartitions</span><span class="p">(</span><span class="n">run_on_gpu</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Pin to the assigned address to keep two tasks on the same node from fighting over the same device.
+The <code class="docutils literal notranslate"><span class="pre">spark.task.resource.gpu.amount</span></code> value sparkctl writes controls how many tasks Spark will
+co-schedule on each GPU.</p>
+</section>
+</section>
+<section id="under-the-hood-gpu-scheduling">
+<h2>Under the hood: GPU scheduling<a class="headerlink" href="#under-the-hood-gpu-scheduling" title="Link to this heading">¶</a></h2>
+<section id="executor-sizing">
+<h3>Executor sizing<a class="headerlink" href="#executor-sizing" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">sparkctl</span> <span class="pre">configure</span> <span class="pre">--rapids</span></code> enables GPU-aware scheduling automatically. When GPU scheduling is
+enabled and you do not set <code class="docutils literal notranslate"><span class="pre">executor_cores</span></code> explicitly, sparkctl follows NVIDIA’s recommended layout:
+<strong>one executor per GPU</strong>, with the node’s usable cores divided evenly among them. On a node with 4
+GPUs and 64 cores you get 4 executors with ~15 cores each, so every GPU is used and each has a
+healthy pool of CPU cores to feed it (I/O, decompression, shuffle). To use all <em>N</em> GPUs you
+therefore need at least <em>N</em> cores in the allocation; request cores generously (e.g. Slurm
+<code class="docutils literal notranslate"><span class="pre">--cpus-per-task</span></code> or <code class="docutils literal notranslate"><span class="pre">--exclusive</span></code>). If CPUs or memory only allow fewer executors than there are
+GPUs, sparkctl logs a warning that some GPUs will sit idle.</p>
+<p>Set <code class="docutils literal notranslate"><span class="pre">executor_cores</span></code> explicitly to override this. Tune the GPU assignment through your settings file:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[runtime]</span>
+<span class="n">enable_gpus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">gpus_per_node</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span>
+<span class="n">executor_gpu_amount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
+<span class="n">task_gpu_amount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.25</span>
+<span class="c1"># executor_cores = 16   # optional; omit to auto-size one executor per GPU</span>
+</pre></div>
+</div>
+</section>
+<section id="gpu-discovery-and-placement">
+<h3>GPU discovery and placement<a class="headerlink" href="#gpu-discovery-and-placement" title="Link to this heading">¶</a></h3>
+<p>sparkctl detects the number of GPUs per node from the compute environment (Slurm GPU variables such
+as <code class="docutils literal notranslate"><span class="pre">SLURM_GPUS_ON_NODE</span></code>, or <code class="docutils literal notranslate"><span class="pre">nvidia-smi</span></code> in a native environment). Override the count when detection
+is unavailable or incorrect:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sparkctl<span class="w"> </span>configure<span class="w"> </span>--gpus<span class="w"> </span>--gpus-per-node<span class="w"> </span><span class="m">4</span>
+</pre></div>
+</div>
+<p>sparkctl writes a GPU discovery script ($SPARK_CONF_DIR/get_gpus_resources.sh) that Spark calls on
+each worker. The script reports the GPUs visible to Spark as JSON
+(<code class="docutils literal notranslate"><span class="pre">{&quot;name&quot;:</span> <span class="pre">&quot;gpu&quot;,</span> <span class="pre">&quot;addresses&quot;:</span> <span class="pre">[&quot;0&quot;,</span> <span class="pre">&quot;1&quot;,</span> <span class="pre">...]}</span></code>), preferring <code class="docutils literal notranslate"><span class="pre">CUDA_VISIBLE_DEVICES</span></code> when set
+(becomes essential when executors run in containers where <code class="docutils literal notranslate"><span class="pre">nvidia-smi</span></code> may be unavailable) and
+falling back to <code class="docutils literal notranslate"><span class="pre">nvidia-smi</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>On a multi-node Slurm job every worker node must have the <strong>same</strong> number of GPUs, because
+sparkctl writes a single <code class="docutils literal notranslate"><span class="pre">spark.worker.resource.gpu.amount</span></code> for all workers. Request GPUs
+per node (<code class="docutils literal notranslate"><span class="pre">--gpus-per-node=4</span></code>) rather than as a job-wide total (<code class="docutils literal notranslate"><span class="pre">--gpus=4</span></code>), which Slurm can
+split unevenly across nodes. <code class="docutils literal notranslate"><span class="pre">sparkctl</span> <span class="pre">configure</span></code> fails fast if it detects a non-uniform
+distribution.</p>
+</div>
+</section>
+</section>
+<section id="monitor-gpu-usage-while-a-job-runs">
+<h2>Monitor GPU usage while a job runs<a class="headerlink" href="#monitor-gpu-usage-while-a-job-runs" title="Link to this heading">¶</a></h2>
+<p>sparkctl’s built-in resource monitor (<code class="docutils literal notranslate"><span class="pre">--resource-monitor</span></code>) only collects CPU, memory, disk, and
+network stats — <strong>it does not capture GPU utilization</strong>. Use NVIDIA’s tools directly.</p>
+<p>GPU work happens on the <strong>worker/executor nodes</strong>, so monitor there, not on the node where you
+launched the driver. From a login node, attach a second shell to the same Slurm allocation:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>srun<span class="w"> </span>--overlap<span class="w"> </span>--jobid<span class="o">=</span><span class="nv">$SLURM_JOB_ID</span><span class="w"> </span>--nodes<span class="o">=</span><span class="m">1</span><span class="w"> </span>--pty<span class="w"> </span>bash
+</pre></div>
+</div>
+<p>Then use any of:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>nvidia-smi<span class="w"> </span>-l<span class="w"> </span><span class="m">1</span><span class="w">                     </span><span class="c1"># full table, refreshed every second</span>
+<span class="gp">$ </span>nvidia-smi<span class="w"> </span>dmon<span class="w"> </span>-s<span class="w"> </span>pucvmet<span class="w"> </span>-d<span class="w"> </span><span class="m">1</span><span class="w">     </span><span class="c1"># scrolling per-GPU metrics; best for watching a live job</span>
+<span class="gp">$ </span>nvtop<span class="w">                               </span><span class="c1"># htop-style TUI, incl. per-process GPU memory (if available)</span>
+</pre></div>
+</div>
+<p>To log the whole run to a CSV for later analysis:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>nvidia-smi<span class="w"> </span>--query-gpu<span class="o">=</span>timestamp,index,utilization.gpu,utilization.memory,memory.used,power.draw<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--format<span class="o">=</span>csv<span class="w"> </span>-l<span class="w"> </span><span class="m">1</span><span class="w"> </span>&gt;<span class="w"> </span>gpu_<span class="k">$(</span>hostname<span class="k">)</span>.csv
+</pre></div>
+</div>
+<p>To watch every node at once on a multi-node cluster (node names are in <code class="docutils literal notranslate"><span class="pre">conf/workers</span></code>):</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>srun<span class="w"> </span>--overlap<span class="w"> </span>--jobid<span class="o">=</span><span class="nv">$SLURM_JOB_ID</span><span class="w"> </span>--ntasks-per-node<span class="o">=</span><span class="m">1</span><span class="w"> </span>nvidia-smi<span class="w"> </span>dmon<span class="w"> </span>-c<span class="w"> </span><span class="m">120</span><span class="w"> </span>-d<span class="w"> </span><span class="m">1</span>
+</pre></div>
+</div>
+<p>Watch <code class="docutils literal notranslate"><span class="pre">utilization.gpu</span></code> while a query runs. Sustained high utilization means operators really are
+executing on the GPU; near-zero utilization while CPUs are busy means the work is falling back to
+the CPU — cross-check with <code class="docutils literal notranslate"><span class="pre">spark.rapids.sql.explain</span></code> (see above).</p>
+</section>
+<section id="when-are-gpus-worth-it">
+<h2>When are GPUs worth it?<a class="headerlink" href="#when-are-gpus-worth-it" title="Link to this heading">¶</a></h2>
+<p>GPUs are not a blanket speedup for Spark — they help some workloads dramatically and slow others
+down. Reach for GPUs when most of these hold:</p>
+<ul class="simple">
+<li><p><strong>Large data and heavy compute.</strong> Multi-GB-to-TB scans with joins, aggregations, sorts, window
+functions, or <code class="docutils literal notranslate"><span class="pre">expand</span></code>/<code class="docutils literal notranslate"><span class="pre">hash</span></code> heavy plans. The GPU’s advantage grows with data volume; small jobs
+are dominated by launch and transfer overhead.</p></li>
+<li><p><strong>Columnar formats.</strong> Parquet/ORC/CSV at scale, where RAPIDS can read and process columns
+directly on the GPU.</p></li>
+<li><p><strong>Operations RAPIDS supports.</strong> Standard SQL/DataFrame expressions and supported types. Check with
+<code class="docutils literal notranslate"><span class="pre">spark.rapids.sql.explain</span></code> (above) — a plan full of CPU fallbacks will not benefit.</p></li>
+<li><p><strong>ML training/inference</strong> with GPU-native libraries (XGBoost, deep learning, RAPIDS cuML).</p></li>
+</ul>
+<p>GPUs usually do <strong>not</strong> help, and can be slower or more expensive per result, when:</p>
+<ul class="simple">
+<li><p>The dataset is small or the job is short — fixed GPU overhead dominates.</p></li>
+<li><p>The work is dominated by <strong>Python/Scala UDFs</strong>, complex regex, or other operators that fall back
+to the CPU (data must round-trip between CPU and GPU memory).</p></li>
+<li><p>The job is I/O- or shuffle-network-bound rather than compute-bound.</p></li>
+<li><p>Per-partition working sets exceed GPU memory, forcing spills.</p></li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Before committing a workload to GPUs, run NVIDIA’s
+<a class="reference external" href="https://docs.nvidia.com/spark-rapids/user-guide/latest/qualification/quickstart.html">Spark RAPIDS qualification tool</a>
+against the CPU run’s event logs. It estimates the speedup (and flags unsupported operators)
+from a real run, which is more reliable than guessing.</p>
+</div>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="spark_log_level.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">How to Set a Custom Spark Log Level</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="web_ui_reverse_proxy.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">How to access the Spark web UIs through a reverse proxy</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, Alliance for Energy Innovation, LLC
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">How to use GPU acceleration</a><ul>
+<li><a class="reference internal" href="#rapids-accelerator">RAPIDS Accelerator</a><ul>
+<li><a class="reference internal" href="#verifying-gpu-acceleration">Verifying GPU acceleration</a></li>
+<li><a class="reference internal" href="#tuning-rapids">Tuning RAPIDS</a></li>
+<li><a class="reference internal" href="#custom-gpu-code-advanced">Custom GPU code (advanced)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#under-the-hood-gpu-scheduling">Under the hood: GPU scheduling</a><ul>
+<li><a class="reference internal" href="#executor-sizing">Executor sizing</a></li>
+<li><a class="reference internal" href="#gpu-discovery-and-placement">GPU discovery and placement</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#monitor-gpu-usage-while-a-job-runs">Monitor GPU usage while a job runs</a></li>
+<li><a class="reference internal" href="#when-are-gpus-worth-it">When are GPUs worth it?</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../_static/documentation_options.js?v=38b66d78"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=3a0c56fd"></script>
+    </body>
+</html>

@@ -1,0 +1,627 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="./">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="prev" title="Explanation" href="explanation/index.html">
+
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+        <title>Frequently Asked Questions - sparkctl documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/autodoc_pydantic.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=70156fbd" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">sparkctl documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  <span class="sidebar-brand-text">sparkctl documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="how_tos/index.html">How Tos</a><input aria-label="Toggle navigation of How Tos" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="how_tos/getting_started/index.html">Getting Started</a><input aria-label="Toggle navigation of Getting Started" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="how_tos/getting_started/installation.html">Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="how_tos/getting_started/deploy_sparkctl.html">Deploy sparkctl in an HPC environment</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="how_tos/configuration/index.html">Configuration</a><input aria-label="Toggle navigation of Configuration" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="how_tos/configuration/compute_nodes.html">How to Select Compute Nodes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="how_tos/configuration/heterogeneous_slurm_jobs.html">Heterogeneous Slurm jobs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="how_tos/configuration/compute_node_failures.html">How to handle compute node failures</a></li>
+<li class="toctree-l3"><a class="reference internal" href="how_tos/configuration/custom_spark_defaults.html">How to use a custom spark-defaults.conf file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="how_tos/configuration/web_ui_reverse_proxy.html">How to access the Spark web UIs through a reverse proxy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="how_tos/configuration/gpus.html">How to use GPU acceleration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="how_tos/configuration/spark_log_level.html">How to Set a Custom Spark Log Level</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="how_tos/execution/index.html">Execution</a><input aria-label="Toggle navigation of Execution" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="how_tos/execution/start_a_cluster.html">Start a Spark Cluster</a></li>
+<li class="toctree-l3"><a class="reference internal" href="how_tos/execution/run_jobs.html">How to run Spark jobs in Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="how_tos/execution/resource_monitoring.html">How to to monitor Spark resource utilization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="how_tos/execution/prometheus_metrics.html">How to expose Spark metrics in Prometheus format</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="how_tos/applications/index.html">Applications</a><input aria-label="Toggle navigation of Applications" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="how_tos/applications/hive_metastore.html">How to configure a Hive metastore</a></li>
+<li class="toctree-l3"><a class="reference internal" href="how_tos/applications/tableau.html">Visualize Data with Tableau</a></li>
+<li class="toctree-l3"><a class="reference internal" href="how_tos/applications/jupyter.html">How to run a Jupyter notebook against the cluster</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="how_tos/debugging/index.html">Debugging</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="tutorials/index.html">Tutorials</a><input aria-label="Toggle navigation of Tutorials" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/run_python_spark_jobs_script.html">Run jobs in a Python script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/run_python_spark_jobs_interactively.html">Run jobs interactively with sparkctl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/run_ibis_spark_jobs.html">Use Ibis with sparkctl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/run_python_spark_jobs_spark_connect.html">Run jobs with Spark Connect</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/run_spark_jobs.html">Run jobs with spark-submit or pyspark</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="reference/index.html">Reference</a><input aria-label="Toggle navigation of Reference" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/sparkctl_api.html">sparkctl API</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reference/hpc/index.html">HPC</a><input aria-label="Toggle navigation of HPC" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/hpc/kestrel.html">NLR Kestrel</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reference/cli_reference.html">CLI Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="explanation/index.html">Explanation</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Frequently Asked Questions</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="_sources/faq.md.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="frequently-asked-questions">
+<span id="sparkctl-faqs"></span><h1>Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Link to this heading">¶</a></h1>
+<section id="installation-and-setup">
+<h2>Installation and Setup<a class="headerlink" href="#installation-and-setup" title="Link to this heading">¶</a></h2>
+<section id="why-do-i-need-both-sparkctl-and-pyspark">
+<h3>Why do I need both sparkctl and pyspark?<a class="headerlink" href="#why-do-i-need-both-sparkctl-and-pyspark" title="Link to this heading">¶</a></h3>
+<p>sparkctl manages the Spark cluster (starting/stopping processes, generating configuration). pyspark
+provides the Spark client libraries you use to submit jobs and interact with the cluster. They
+serve different purposes:</p>
+<ul class="simple">
+<li><p><strong>sparkctl</strong>: Cluster lifecycle management</p></li>
+<li><p><strong>pyspark</strong>: Spark application development and submission</p></li>
+</ul>
+<p>You can install both together with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">&quot;sparkctl[pyspark]&quot;</span></code>.</p>
+</section>
+<section id="what-s-the-difference-between-sparkctl-toml-and-conf">
+<h3>What’s the difference between <code class="docutils literal notranslate"><span class="pre">~/.sparkctl.toml</span></code> and <code class="docutils literal notranslate"><span class="pre">./conf/</span></code>?<a class="headerlink" href="#what-s-the-difference-between-sparkctl-toml-and-conf" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">~/.sparkctl.toml</span></code></strong>: Your personal configuration that persists across sessions. Contains paths
+to Spark/Java and HPC-specific settings. Set this once per user.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">./conf/</span></code></strong>: Generated fresh each time you run <code class="docutils literal notranslate"><span class="pre">sparkctl</span> <span class="pre">configure</span></code>. Contains Spark
+configuration specific to your current HPC allocation and working directory.</p></li>
+</ul>
+<p>See <a class="reference internal" href="explanation/index.html#configuration-files"><span class="std std-ref">Configuration Files</span></a> for details.</p>
+</section>
+</section>
+<section id="running-jobs">
+<h2>Running Jobs<a class="headerlink" href="#running-jobs" title="Link to this heading">¶</a></h2>
+<section id="my-job-is-running-in-spark-local-mode-and-did-not-attach-to-the-cluster-master">
+<h3>My job is running in Spark local mode and did not attach to the cluster master.<a class="headerlink" href="#my-job-is-running-in-spark-local-mode-and-did-not-attach-to-the-cluster-master" title="Link to this heading">¶</a></h3>
+<p>Ensure <code class="docutils literal notranslate"><span class="pre">SPARK_CONF_DIR</span></code> is set correctly before running your application:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span><span class="nb">export</span><span class="w"> </span><span class="nv">SPARK_CONF_DIR</span><span class="o">=</span>/path/to/spark/conf
+</pre></div>
+</div>
+</section>
+<section id="my-job-fails-with-java-not-found-or-java-home-not-set">
+<h3>My job fails with “Java not found” or “JAVA_HOME not set”<a class="headerlink" href="#my-job-fails-with-java-not-found-or-java-home-not-set" title="Link to this heading">¶</a></h3>
+<p>Ensure <code class="docutils literal notranslate"><span class="pre">JAVA_HOME</span></code> is set correctly before running your application:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span><span class="nb">export</span><span class="w"> </span><span class="nv">JAVA_HOME</span><span class="o">=</span>/path/to/java
+</pre></div>
+</div>
+<p>The Java path should match what’s in your <code class="docutils literal notranslate"><span class="pre">~/.sparkctl.toml</span></code>. sparkctl uses this for Spark
+processes, but your application also needs it set.</p>
+</section>
+<section id="i-m-getting-an-error-about-mismatched-python-versions">
+<h3>I’m getting an error about mismatched Python versions.<a class="headerlink" href="#i-m-getting-an-error-about-mismatched-python-versions" title="Link to this heading">¶</a></h3>
+<p>The cluster may be running a different Python version than your application. Set this
+environment variable before running your application:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span><span class="nb">export</span><span class="w"> </span><span class="nv">PYSPARK_PYTHON</span><span class="o">=</span><span class="k">$(</span>which<span class="w"> </span>python<span class="k">)</span>
+</pre></div>
+</div>
+</section>
+<section id="my-workers-fail-to-find-a-shared-library-e-g-libpython3-11-so">
+<h3>My workers fail to find a shared library (e.g. <code class="docutils literal notranslate"><span class="pre">libpython3.11.so</span></code>).<a class="headerlink" href="#my-workers-fail-to-find-a-shared-library-e-g-libpython3-11-so" title="Link to this heading">¶</a></h3>
+<p>This happens when the Python (or other dependency) you loaded before allocating nodes relies on an
+environment that is not present on the worker nodes by default. In a Slurm environment, sparkctl
+launches workers with <code class="docutils literal notranslate"><span class="pre">srun</span></code>, which forwards your full submission environment — environment
+modules, virtual environments, and <code class="docutils literal notranslate"><span class="pre">LD_LIBRARY_PATH</span></code> — to the worker nodes. This usually resolves
+such errors without extra configuration.</p>
+<p>If your site’s Slurm configuration does not work with sparkctl’s <code class="docutils literal notranslate"><span class="pre">srun</span></code> invocation, you can fall
+back to launching workers over <code class="docutils literal notranslate"><span class="pre">ssh</span></code> by setting <code class="docutils literal notranslate"><span class="pre">use_srun</span> <span class="pre">=</span> <span class="pre">false</span></code> in the <code class="docutils literal notranslate"><span class="pre">[compute]</span></code> section of
+your <code class="docutils literal notranslate"><span class="pre">~/.sparkctl.toml</span></code>. Note that <code class="docutils literal notranslate"><span class="pre">ssh</span></code> does not forward your environment, so you may then need to
+export the relevant variables yourself, for example through <code class="docutils literal notranslate"><span class="pre">spark-env.sh</span></code> in the generated
+<code class="docutils literal notranslate"><span class="pre">./conf/</span></code> directory.</p>
+</section>
+<section id="i-m-getting-an-error-about-mismatched-spark-versions">
+<h3>I’m getting an error about mismatched Spark versions.<a class="headerlink" href="#i-m-getting-an-error-about-mismatched-spark-versions" title="Link to this heading">¶</a></h3>
+<p>If you are running pyspark/spark-submit after installing via <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">sparkctl[pyspark]</span></code>,
+your version of pyspark must match the cluster version exactly. Client version 4.1.3 is
+incompatible with cluster version 4.1.1.</p>
+</section>
+<section id="why-can-t-my-workers-connect-to-the-master">
+<h3>Why can’t my workers connect to the master?<a class="headerlink" href="#why-can-t-my-workers-connect-to-the-master" title="Link to this heading">¶</a></h3>
+<p>Common causes:</p>
+<ol class="arabic simple">
+<li><p><strong>High-bandwidth nodes</strong>: Some NLR Kestrel compute nodes have two network cards, which Spark
+cannot deal with. Set <code class="docutils literal notranslate"><span class="pre">--constraint</span> <span class="pre">lbw</span></code> when allocating nodes.</p></li>
+</ol>
+<p>Check the Spark master logs in <code class="docutils literal notranslate"><span class="pre">./spark_scratch/logs/</span></code> for connection errors.</p>
+</section>
+<section id="how-do-i-connect-to-the-spark-web-ui">
+<h3>How do I connect to the Spark Web UI?<a class="headerlink" href="#how-do-i-connect-to-the-spark-web-ui" title="Link to this heading">¶</a></h3>
+<p>Spark runs a web UI on port 8080 (master) and port 4040 (driver/application). Since HPC compute
+nodes aren’t directly accessible, use SSH tunneling. Substitute the name of your compute node
+(it is listed in <code class="docutils literal notranslate"><span class="pre">./conf/workers</span></code>) for <code class="docutils literal notranslate"><span class="pre">$COMPUTE_NODE</span></code>:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span><span class="nb">export</span><span class="w"> </span><span class="nv">COMPUTE_NODE</span><span class="o">=</span>&lt;your-compute-node-name&gt;
+<span class="gp">$ </span>ssh<span class="w"> </span>-L<span class="w"> </span><span class="m">8080</span>:<span class="nv">$COMPUTE_NODE</span>:8080<span class="w"> </span>-L<span class="w"> </span><span class="m">4040</span>:<span class="nv">$COMPUTE_NODE</span>:4040<span class="w"> </span>user@hpc-login-node
+</pre></div>
+</div>
+<p>Then open <code class="docutils literal notranslate"><span class="pre">http://localhost:8080</span></code> or <code class="docutils literal notranslate"><span class="pre">http://localhost:4040</span></code> in your browser.</p>
+<p>See <a class="reference internal" href="how_tos/debugging/index.html#spark-web-ui"><span class="std std-ref">Spark web UI</span></a> for more details.</p>
+</section>
+<section id="why-is-my-job-slow">
+<h3>Why is my job slow?<a class="headerlink" href="#why-is-my-job-slow" title="Link to this heading">¶</a></h3>
+<p>Common causes:</p>
+<ol class="arabic simple">
+<li><p><strong>Shuffle spilling</strong>: Executors are writing shuffle data to disk. Increase executor memory or
+use faster local storage.</p></li>
+<li><p><strong>Data skew</strong>: Some partitions have much more data than others. Consider salting keys.</p></li>
+<li><p><strong>Too few partitions</strong>: Increase <code class="docutils literal notranslate"><span class="pre">spark.sql.shuffle.partitions</span></code>.</p></li>
+<li><p><strong>Too many partitions</strong>: Decrease partitions if you have many small tasks.</p></li>
+<li><p><strong>Slow storage</strong>: Ensure shuffle storage uses fast local SSDs, not shared filesystem.</p></li>
+<li><p><strong>Non-ideal partitioning</strong>: If you are trying to partition-by-column in the same query as your
+main work, especially where you significantly increased the shuffle partitions, persist your
+main work first. Then repartition in a second task.</p></li>
+<li><p><strong>Query too complex</strong>: If you are trying to run a very complex query where subtasks have
+different data sizes and partitioning needs, consider breaking the query into smaller parts with
+different settings. Persist intermediate results to the filesystem so that you can checkpoint and
+make incremental progress.</p></li>
+</ol>
+<p>See the <a class="reference internal" href="how_tos/debugging/index.html#how-tos-debugging"><span class="std std-ref">Debugging</span></a> for performance troubleshooting.</p>
+</section>
+</section>
+<section id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading">¶</a></h2>
+<section id="how-do-i-increase-executor-memory">
+<h3>How do I increase executor memory?<a class="headerlink" href="#how-do-i-increase-executor-memory" title="Link to this heading">¶</a></h3>
+<p>sparkctl calculates executor memory automatically based on available RAM. To override:</p>
+<p>Edit the <code class="docutils literal notranslate"><span class="pre">./conf/spark-defaults.conf</span></code> after running <code class="docutils literal notranslate"><span class="pre">sparkctl</span> <span class="pre">configure</span></code> but before
+starting the cluster.</p>
+</section>
+<section id="can-i-use-yarn-or-kubernetes-instead-of-standalone-mode">
+<h3>Can I use YARN or Kubernetes instead of Standalone mode?<a class="headerlink" href="#can-i-use-yarn-or-kubernetes-instead-of-standalone-mode" title="Link to this heading">¶</a></h3>
+<p>No. sparkctl is designed specifically for Standalone mode because:</p>
+<ul class="simple">
+<li><p>It requires no cluster-wide services</p></li>
+<li><p>It works without admin access</p></li>
+<li><p>It’s designed for ephemeral, user-controlled clusters</p></li>
+</ul>
+<p>If you have YARN or Kubernetes available, you likely don’t need sparkctl.</p>
+</section>
+</section>
+<section id="slurm-integration">
+<h2>Slurm Integration<a class="headerlink" href="#slurm-integration" title="Link to this heading">¶</a></h2>
+<section id="what-slurm-allocation-should-i-use">
+<h3>What Slurm allocation should I use?<a class="headerlink" href="#what-slurm-allocation-should-i-use" title="Link to this heading">¶</a></h3>
+<p>A typical allocation for sparkctl:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>salloc<span class="w"> </span>-t<span class="w"> </span><span class="m">01</span>:00:00<span class="w"> </span>-n4<span class="w"> </span>--mem<span class="o">=</span>30G<span class="w"> </span>:<span class="w"> </span>-N2<span class="w"> </span>--mem<span class="o">=</span>240G
+</pre></div>
+</div>
+<p>This creates:</p>
+<ul class="simple">
+<li><p>A “master” allocation (4 cores, 30GB) for the Spark master and your driver</p></li>
+<li><p>Worker nodes (2 full nodes) for Spark executors</p></li>
+</ul>
+<p>See <a class="reference internal" href="how_tos/configuration/heterogeneous_slurm_jobs.html#heterogeneous-slurm-jobs"><span class="std std-ref">Heterogeneous Slurm jobs</span></a> for details.</p>
+</section>
+<section id="can-i-use-sparkctl-in-a-batch-script-sbatch">
+<h3>Can I use sparkctl in a batch script (sbatch)?<a class="headerlink" href="#can-i-use-sparkctl-in-a-batch-script-sbatch" title="Link to this heading">¶</a></h3>
+<p>Yes. Example sbatch script:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="c1">#SBATCH --account=my_account</span>
+<span class="c1">#SBATCH --nodes=3</span>
+<span class="c1">#SBATCH --time=02:00:00</span>
+<span class="c1">#SBATCH --mem=240G</span>
+
+<span class="nb">source</span><span class="w"> </span>~/python-envs/sparkctl/bin/activate
+sparkctl<span class="w"> </span>configure
+sparkctl<span class="w"> </span>start
+<span class="nb">export</span><span class="w"> </span><span class="nv">SPARK_CONF_DIR</span><span class="o">=</span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/conf
+<span class="nb">export</span><span class="w"> </span><span class="nv">JAVA_HOME</span><span class="o">=</span>/path/to/java
+spark-submit<span class="w"> </span>--master<span class="w"> </span>spark://<span class="k">$(</span>hostname<span class="k">)</span>:7077<span class="w"> </span>my-job.py
+sparkctl<span class="w"> </span>stop
+</pre></div>
+</div>
+</section>
+<section id="what-happens-if-a-compute-node-fails">
+<h3>What happens if a compute node fails?<a class="headerlink" href="#what-happens-if-a-compute-node-fails" title="Link to this heading">¶</a></h3>
+<p>By default, Slurm kills the entire job if any node fails. For long-running jobs, consider
+<a class="reference internal" href="how_tos/configuration/compute_node_failures.html#compute-node-failures"><span class="std std-ref">How to handle compute node failures</span></a>.</p>
+</section>
+</section>
+<section id="spark-connect">
+<h2>Spark Connect<a class="headerlink" href="#spark-connect" title="Link to this heading">¶</a></h2>
+<section id="when-should-i-use-spark-connect">
+<h3>When should I use Spark Connect?<a class="headerlink" href="#when-should-i-use-spark-connect" title="Link to this heading">¶</a></h3>
+<p>Use Spark Connect when:</p>
+<ul class="simple">
+<li><p>You want a minimal client installation (<code class="docutils literal notranslate"><span class="pre">pyspark-client</span></code> is much smaller than <code class="docutils literal notranslate"><span class="pre">pyspark</span></code>)</p></li>
+<li><p>You’re connecting from a remote machine</p></li>
+<li><p>You want better isolation between client and cluster Python environments</p></li>
+</ul>
+</section>
+<section id="what-are-the-limitations-of-spark-connect">
+<h3>What are the limitations of Spark Connect?<a class="headerlink" href="#what-are-the-limitations-of-spark-connect" title="Link to this heading">¶</a></h3>
+<p>Some Spark APIs behave differently with Spark Connect. See the <a class="reference external" href="https://spark.apache.org/docs/latest/spark-connect-overview.html#how-spark-connect-client-applications-differ-from-classic-spark-applications">official documentation</a> for details.</p>
+</section>
+<section id="how-do-i-enable-spark-connect">
+<h3>How do I enable Spark Connect?<a class="headerlink" href="#how-do-i-enable-spark-connect" title="Link to this heading">¶</a></h3>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sparkctl<span class="w"> </span>configure<span class="w"> </span>--connect-server
+<span class="gp">$ </span>sparkctl<span class="w"> </span>start
+</pre></div>
+</div>
+<p>Then connect with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql</span><span class="w"> </span><span class="kn">import</span> <span class="n">SparkSession</span>
+<span class="n">spark</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s2">&quot;sc://hostname:15002&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">¶</a></h2>
+<section id="where-are-the-log-files">
+<h3>Where are the log files?<a class="headerlink" href="#where-are-the-log-files" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Spark master/worker logs</strong>: <code class="docutils literal notranslate"><span class="pre">./spark_scratch/logs/</span></code></p></li>
+<li><p><strong>sparkctl log</strong>: <code class="docutils literal notranslate"><span class="pre">./sparkctl.log</span></code></p></li>
+<li><p><strong>Executor logs</strong>: Available via Spark Web UI or in worker directories</p></li>
+</ul>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>find<span class="w"> </span>spark_scratch/workers/<span class="w"> </span>-name<span class="w"> </span>stderr<span class="w"> </span>-exec<span class="w"> </span>ls<span class="w"> </span>-lh<span class="w"> </span><span class="o">{}</span><span class="w"> </span><span class="se">\;</span>
+</pre></div>
+</div>
+</section>
+<section id="how-do-i-clean-up-after-a-failed-job">
+<h3>How do I clean up after a failed job?<a class="headerlink" href="#how-do-i-clean-up-after-a-failed-job" title="Link to this heading">¶</a></h3>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sparkctl<span class="w"> </span>stop<span class="w">  </span><span class="c1"># Stop any running Spark processes</span>
+<span class="gp">$ </span>rm<span class="w"> </span>-rf<span class="w"> </span>./conf<span class="w"> </span>./spark_scratch/logs<span class="w">  </span><span class="c1"># Remove generated files</span>
+</pre></div>
+</div>
+</section>
+<section id="sparkctl-hangs-during-startup">
+<h3>sparkctl hangs during startup<a class="headerlink" href="#sparkctl-hangs-during-startup" title="Link to this heading">¶</a></h3>
+<p>Check if Spark processes from a previous job are still running:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>ps<span class="w"> </span>aux<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="nv">$USER</span>
+<span class="gp">$ </span>sparkctl<span class="w"> </span>stop
+</pre></div>
+</div>
+<p>Also verify your Slurm allocation is still active:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>squeue<span class="w"> </span>--me
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          <a class="prev-page" href="explanation/index.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Explanation</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, Alliance for Energy Innovation, LLC
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Frequently Asked Questions</a><ul>
+<li><a class="reference internal" href="#installation-and-setup">Installation and Setup</a><ul>
+<li><a class="reference internal" href="#why-do-i-need-both-sparkctl-and-pyspark">Why do I need both sparkctl and pyspark?</a></li>
+<li><a class="reference internal" href="#what-s-the-difference-between-sparkctl-toml-and-conf">What’s the difference between <code class="docutils literal notranslate"><span class="pre">~/.sparkctl.toml</span></code> and <code class="docutils literal notranslate"><span class="pre">./conf/</span></code>?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#running-jobs">Running Jobs</a><ul>
+<li><a class="reference internal" href="#my-job-is-running-in-spark-local-mode-and-did-not-attach-to-the-cluster-master">My job is running in Spark local mode and did not attach to the cluster master.</a></li>
+<li><a class="reference internal" href="#my-job-fails-with-java-not-found-or-java-home-not-set">My job fails with “Java not found” or “JAVA_HOME not set”</a></li>
+<li><a class="reference internal" href="#i-m-getting-an-error-about-mismatched-python-versions">I’m getting an error about mismatched Python versions.</a></li>
+<li><a class="reference internal" href="#my-workers-fail-to-find-a-shared-library-e-g-libpython3-11-so">My workers fail to find a shared library (e.g. <code class="docutils literal notranslate"><span class="pre">libpython3.11.so</span></code>).</a></li>
+<li><a class="reference internal" href="#i-m-getting-an-error-about-mismatched-spark-versions">I’m getting an error about mismatched Spark versions.</a></li>
+<li><a class="reference internal" href="#why-can-t-my-workers-connect-to-the-master">Why can’t my workers connect to the master?</a></li>
+<li><a class="reference internal" href="#how-do-i-connect-to-the-spark-web-ui">How do I connect to the Spark Web UI?</a></li>
+<li><a class="reference internal" href="#why-is-my-job-slow">Why is my job slow?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#how-do-i-increase-executor-memory">How do I increase executor memory?</a></li>
+<li><a class="reference internal" href="#can-i-use-yarn-or-kubernetes-instead-of-standalone-mode">Can I use YARN or Kubernetes instead of Standalone mode?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#slurm-integration">Slurm Integration</a><ul>
+<li><a class="reference internal" href="#what-slurm-allocation-should-i-use">What Slurm allocation should I use?</a></li>
+<li><a class="reference internal" href="#can-i-use-sparkctl-in-a-batch-script-sbatch">Can I use sparkctl in a batch script (sbatch)?</a></li>
+<li><a class="reference internal" href="#what-happens-if-a-compute-node-fails">What happens if a compute node fails?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spark-connect">Spark Connect</a><ul>
+<li><a class="reference internal" href="#when-should-i-use-spark-connect">When should I use Spark Connect?</a></li>
+<li><a class="reference internal" href="#what-are-the-limitations-of-spark-connect">What are the limitations of Spark Connect?</a></li>
+<li><a class="reference internal" href="#how-do-i-enable-spark-connect">How do I enable Spark Connect?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a><ul>
+<li><a class="reference internal" href="#where-are-the-log-files">Where are the log files?</a></li>
+<li><a class="reference internal" href="#how-do-i-clean-up-after-a-failed-job">How do I clean up after a failed job?</a></li>
+<li><a class="reference internal" href="#sparkctl-hangs-during-startup">sparkctl hangs during startup</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=38b66d78"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=3a0c56fd"></script>
+    </body>
+</html>
