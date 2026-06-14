@@ -644,7 +644,7 @@ spark.executor.memory {executor_memory_gb}g
 
         if rt_params.enable_postgres_hive_metastore:
             if rt_params.postgres_password is None:
-                msg = "posgres_password cannot be None"
+                msg = "postgres_password cannot be None"
                 raise InvalidConfiguration(msg)
             write_postgres_hive_site_file(rt_params.postgres_password, hive_site_file)
         else:

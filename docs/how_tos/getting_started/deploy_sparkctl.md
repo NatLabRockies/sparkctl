@@ -23,6 +23,7 @@ Here is an example filesystem layout:
 ├── hadoop-3.4.1/
 ├── jdk-21.0.7/
 ├── postgresql-42.7.4.jar
+├── rapids-4-spark_2.13-26.04.2.jar
 ├── spark-4.1.1-bin-hadoop3/
 ```
 
@@ -32,6 +33,7 @@ versions tested with Apache Spark v4.1.1:
 
 - https://archive.apache.org/dist/spark/spark-4.1.1/spark-4.1.1-bin-hadoop3.tgz
 - https://download.oracle.com/java/21/archive/jdk-21.0.7_linux-x64_bin.tar.gz
+- https://repo1.maven.org/maven2/com/nvidia/rapids-4-spark_2.13/26.04.2/rapids-4-spark_2.13-26.04.2.jar
 - https://archive.apache.org/dist/hadoop/common/hadoop-3.4.1/hadoop-3.4.1.tar.gz
 - https://archive.apache.org/dist/hive/hive-4.2.0/apache-hive-4.2.0-bin.tar.gz
 - https://jdbc.postgresql.org/download/postgresql-42.7.4.jar
@@ -49,6 +51,7 @@ $ sparkctl default-config \
     /datasets/images/apache_spark/spark-4.1.1-bin-hadoop3 \
     /datasets/images/apache_spark/jdk-21.0.7 \
     --hadoop-path /datasets/images/apache_spark/hadoop-3.4.1 \
+    --rapids-jar-file /datasets/images/apache_spark/rapids-4-spark_2.13-26.04.2.jar \
     --hive-tarball /datasets/images/apache_spark/apache-hive-4.2.0-bin.tar.gz \
     --postgresql-jar-file /datasets/images/apache_spark/postgresql-42.7.4.jar \
     --compute-environment slurm

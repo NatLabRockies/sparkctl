@@ -1,108 +1,56 @@
-# How to enable GPU acceleration
-
-## GPU-aware scheduling
-
-Enable GPU scheduling so Spark workers advertise their GPUs and executors/tasks request them:
-
-```console
-$ sparkctl configure --gpus
-```
-
-sparkctl detects the number of GPUs per node from the compute environment (Slurm GPU variables such
-as `SLURM_GPUS_ON_NODE`, or `nvidia-smi` in a native environment). Override the count when detection
-is unavailable or incorrect:
-
-```console
-$ sparkctl configure --gpus --gpus-per-node 4
-```
-
-This generates a GPU discovery script in the cluster's `conf` directory and writes these settings to
-`spark-defaults.conf`:
-
-- `spark.worker.resource.gpu.amount` and `spark.worker.resource.gpu.discoveryScript`
-- `spark.executor.resource.gpu.amount` and `spark.executor.resource.gpu.discoveryScript`
-- `spark.task.resource.gpu.amount`
-
-By default each executor is assigned one GPU and tasks share that GPU
-(`spark.task.resource.gpu.amount = executor_gpu_amount / executor_cores`).
-
-```{eval-rst}
-.. note:: On a multi-node Slurm job every worker node must have the **same** number of GPUs, because
-   sparkctl writes a single ``spark.worker.resource.gpu.amount`` for all workers. Request GPUs
-   per node (``--gpus-per-node=4``) rather than as a job-wide total (``--gpus=4``), which Slurm can
-   split unevenly across nodes. ``sparkctl configure`` fails fast if it detects a non-uniform
-   distribution.
-```
-
-### Executor sizing
-
-When GPUs are enabled and you do not set `executor_cores`, sparkctl follows NVIDIA's recommended
-layout: **one executor per GPU**, with the node's usable cores divided evenly among them. For
-example, on a node with 4 GPUs and 64 cores you get 4 executors with ~15 cores each, so every GPU is
-used and each has a healthy pool of CPU cores to feed it (I/O, decompression, shuffle). To use all
-*N* GPUs you therefore need at least *N* cores in the allocation; request cores generously (e.g.
-Slurm `--cpus-per-task` or `--exclusive`). If CPUs or memory only allow fewer executors than there
-are GPUs, sparkctl logs a warning that some GPUs will sit idle.
-
-Setting `executor_cores` explicitly overrides this and is honored as-is. Tune the GPU assignment
-through your settings file:
-
-```toml
-[runtime]
-enable_gpus = true
-gpus_per_node = 4
-executor_gpu_amount = 1
-task_gpu_amount = 0.25
-# executor_cores = 16   # optional; omit to auto-size one executor per GPU
-```
+# How to use GPU acceleration
 
 ## RAPIDS Accelerator
 
-The [NVIDIA RAPIDS Accelerator for Apache Spark](https://nvidia.github.io/spark-rapids/) offloads
-SQL and DataFrame operations to GPUs.
+The [NVIDIA RAPIDS Accelerator for Apache Spark](https://nvidia.github.io/spark-rapids/) is the
+recommended way to accelerate Spark workloads on NVIDIA GPUs. It offloads SQL and DataFrame
+operations to GPUs with no code changes — supported operators run on the GPU automatically, and
+unsupported ones fall back to CPUs.
 
 1. Download the RAPIDS Accelerator jar from the
-   [RAPIDS download page](https://nvidia.github.io/spark-rapids/docs/download.html).
+    [RAPIDS download page](https://nvidia.github.io/spark-rapids/docs/download.html).
+    (This may have already been done by your local sparkctl administrator.)
 
-2. Record its path when creating your settings file:
+2. If needed, record its path when creating your settings file:
 
-   ```console
-   $ sparkctl default-config --rapids-jar-file /path/to/rapids-4-spark_2.13-<version>.jar \
-       /path/to/spark /path/to/java
-   ```
+    ```console
+    $ sparkctl default-config \
+        --rapids-jar-file /path/to/rapids-4-spark_2.13-<version>.jar \
+        /path/to/spark \
+        /path/to/java
+    ```
 
-3. Enable RAPIDS (this implies `--gpus`):
+3. Enable RAPIDS:
 
-   ```console
-   $ sparkctl configure --rapids
-   ```
+    ```console
+    $ sparkctl configure --rapids
+    ```
 
-This adds the plugin jar with `spark.jars`, sets `spark.plugins com.nvidia.spark.SQLPlugin`, and
-enables `spark.rapids.sql.enabled`.
+This enables GPU-aware scheduling behind the scenes and writes these settings to
+`spark-defaults.conf`:
+
+- Plugin jar via `spark.jars`, plugin registration via `spark.plugins com.nvidia.spark.SQLPlugin`
+- GPU-aware scheduling (`spark.worker.resource.gpu.*`, `spark.executor.resource.gpu.*`,
+  `spark.task.resource.gpu.*`)
+- `spark.rapids.sql.enabled`
 
 ```{eval-rst}
 .. note:: ``spark.jars`` is used instead of ``spark.{driver,executor}.extraClassPath`` so the
    RAPIDS jar does not conflict with the classpath entries the PostgreSQL Hive metastore sets.
 ```
 
-## What your application needs to do
+### Verifying GPU acceleration
 
-What you change in your application depends on *how* you intend to use the GPUs.
-
-### SQL / DataFrame workloads with RAPIDS
-
-For SQL and DataFrame queries, the RAPIDS Accelerator is mostly transparent: once the plugin is
-enabled (above), supported operators run on the GPU with no code changes. The important caveat is
-that **not every operator is GPU-accelerated** — unsupported expressions, data types, and many
-Python/Scala UDFs silently fall back to the CPU, and a query that bounces between CPU and GPU can be
-slower than staying on the CPU.
-
-Before assuming a query is GPU-accelerated, ask RAPIDS what it actually placed on the GPU:
+Not every operator is GPU-accelerated. Unsupported expressions, data types, and Python/Scala UDFs
+fall back to the CPU, and a query that bounces between CPU and GPU can be slower than staying on
+the CPU. Before assuming a query is GPU-accelerated, ask RAPIDS what it actually placed on the GPU:
 
 ```python
 spark.conf.set("spark.rapids.sql.explain", "NOT_ON_GPU")  # log every operator that fell back
 df.explain()  # "GPU" nodes ran on the GPU; "Project"/"Filter" without "Gpu" fell back to CPU
 ```
+
+### Tuning RAPIDS
 
 Useful tuning knobs (set in your settings file's `spark_defaults` or at runtime):
 
@@ -112,11 +60,11 @@ Useful tuning knobs (set in your settings file's `spark_defaults` or at runtime)
   task, which it prefers over many tiny tasks.
 - Keep Adaptive Query Execution on (`spark.sql.adaptive.enabled true`, the Spark default).
 
-### Custom GPU code (no RAPIDS)
+### Custom GPU code (advanced)
 
 If you call GPU libraries directly (e.g. CuPy, PyTorch, RAPIDS cuDF, or XGBoost) inside your tasks,
-RAPIDS does not apply. You still enable GPU-aware scheduling with `--gpus` so Spark assigns GPUs to
-tasks, then read the assigned GPU address from the task context and pin your library to it:
+RAPIDS does not apply. The section below explains how GPU scheduling works; once enabled, pin each
+task to its assigned GPU using the task context:
 
 ```python
 from pyspark import TaskContext
@@ -131,9 +79,57 @@ def run_on_gpu(rows):
 rdd.mapPartitions(run_on_gpu).collect()
 ```
 
-Pinning to the assigned address is what keeps two tasks on the same node from fighting over the same
-device. The `spark.task.resource.gpu.amount` value sparkctl writes controls how many tasks Spark
-will co-schedule on each GPU.
+Pin to the assigned address to keep two tasks on the same node from fighting over the same device.
+The `spark.task.resource.gpu.amount` value sparkctl writes controls how many tasks Spark will
+co-schedule on each GPU.
+
+## Under the hood: GPU scheduling
+
+### Executor sizing
+
+`sparkctl configure --rapids` enables GPU-aware scheduling automatically. When GPU scheduling is
+enabled and you do not set `executor_cores` explicitly, sparkctl follows NVIDIA's recommended layout:
+**one executor per GPU**, with the node's usable cores divided evenly among them. On a node with 4
+GPUs and 64 cores you get 4 executors with ~15 cores each, so every GPU is used and each has a
+healthy pool of CPU cores to feed it (I/O, decompression, shuffle). To use all *N* GPUs you
+therefore need at least *N* cores in the allocation; request cores generously (e.g. Slurm
+`--cpus-per-task` or `--exclusive`). If CPUs or memory only allow fewer executors than there are
+GPUs, sparkctl logs a warning that some GPUs will sit idle.
+
+Set `executor_cores` explicitly to override this. Tune the GPU assignment through your settings file:
+
+```toml
+[runtime]
+enable_gpus = true
+gpus_per_node = 4
+executor_gpu_amount = 1
+task_gpu_amount = 0.25
+# executor_cores = 16   # optional; omit to auto-size one executor per GPU
+```
+
+### GPU discovery and placement
+
+sparkctl detects the number of GPUs per node from the compute environment (Slurm GPU variables such
+as `SLURM_GPUS_ON_NODE`, or `nvidia-smi` in a native environment). Override the count when detection
+is unavailable or incorrect:
+
+```console
+$ sparkctl configure --gpus --gpus-per-node 4
+```
+
+sparkctl writes a GPU discovery script ($SPARK_CONF_DIR/get_gpus_resources.sh) that Spark calls on
+each worker. The script reports the GPUs visible to Spark as JSON
+(`{"name": "gpu", "addresses": ["0", "1", ...]}`), preferring `CUDA_VISIBLE_DEVICES` when set
+(becomes essential when executors run in containers where `nvidia-smi` may be unavailable) and
+falling back to `nvidia-smi`.
+
+```{eval-rst}
+.. note:: On a multi-node Slurm job every worker node must have the **same** number of GPUs, because
+   sparkctl writes a single ``spark.worker.resource.gpu.amount`` for all workers. Request GPUs
+   per node (``--gpus-per-node=4``) rather than as a job-wide total (``--gpus=4``), which Slurm can
+   split unevenly across nodes. ``sparkctl configure`` fails fast if it detects a non-uniform
+   distribution.
+```
 
 ## Monitor GPU usage while a job runs
 

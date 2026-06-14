@@ -37,7 +37,7 @@ dependencies = [
 
 [project.optional-dependencies]
 pyspark = [
-    "pyspark == 4.1.1",
+    "pyspark == 4.1.1",  # Do not upgrade unless the version is supported by RAPIDS.
 ]
 # Optional notebook frontend for `sparkctl configure --jupyter`. Installs the classic notebook
 # (the default frontend); install jupyterlab separately to use `--jupyter-command lab`.
