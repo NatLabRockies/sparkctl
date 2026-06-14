@@ -767,7 +767,7 @@ spark.executor.resource.gpu.discoveryScript {discovery_script}
 spark.task.resource.gpu.amount {task_gpu_amount}
 """
             )
-        logger.warning("Enabled GPU scheduling with {} GPU(s) per node.", num_gpus)
+        logger.info("Enabled GPU scheduling with {} GPU(s) per node.", num_gpus)
 
     def _write_gpu_discovery_script(self) -> Path:
         script = self._config.directories.get_gpu_discovery_script_file()
@@ -823,7 +823,7 @@ spark.rapids.sql.enabled true
 spark.rapids.sql.concurrentGpuTasks 1
 """
             )
-        logger.warning("Enabled RAPIDS GPU acceleration using {}", rapids_jar)
+        logger.info("Enabled RAPIDS GPU acceleration using {}", rapids_jar)
 
     def _get_runtime_spark_driver_memory_gb(self) -> int:
         # Note that spark-defaults.conf takes precedence over our config.json.
@@ -911,9 +911,8 @@ export SPARK_HOME={spark_dir}
 export SPARK_CONF_DIR={conf_dir}
 export JAVA_HOME={java_dir}
 
-To connect interactively, add Spark to your PATH and point a client at the master, e.g.:
+Then connect a client to the master, e.g.:
 
-export PATH="$SPARK_HOME/bin:$PATH"
 pyspark --master {url}
 
 ###############################################################################
